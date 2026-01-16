@@ -1,0 +1,32 @@
+{
+  "expo": {
+    "name": "SymptomAI",
+    "slug": "symptom-ai-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1F2937"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.symptom.ai"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#1F2937"
+      },
+      "package": "com.symptom.ai"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}
