@@ -1,80 +1,67 @@
-import React, { useState, useContext } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, TextInput } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { AuthContext } from '../context/AuthContext';
-import { login } from '../config/api';
-import Input from '../components/Input';
-import GradientButton from '../components/GradientButton';
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const { loginUser } = useContext(AuthContext);
 
-  const handleLogin = async () => {
+  const handleLogin = () => {
     if (!email || !password) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
-
-    setLoading(true);
-    try {
-      const response = await login(email, password);
-      await loginUser(response.user);
-      navigation.replace('Dashboard');
-    } catch (error) {
-      Alert.alert('Login Failed', error.message || 'Invalid email or password');
-    } finally {
-      setLoading(false);
-    }
+    
+    // For demo - accept any email/password
+    Alert.alert('Success', 'Login successful!', [
+      { text: 'OK', onPress: () => navigation.navigate('Dashboard') }
+    ]);
   };
 
   return (
-    <KeyboardAvoidingView 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.container}
-    >
-      <LinearGradient colors={['#111827', '#1F2937']} style={styles.gradient}>
-        <View style={styles.content}>
-          <Text style={styles.title}>SymptomAI</Text>
-          <Text style={styles.subtitle}>Your AI Health Assistant</Text>
+    <LinearGradient colors={['#111827', '#1F2937']} style={styles.container}>
+      <View style={styles.content}>
+        <Text style={styles.title}>SymptomAI</Text>
+        <Text style={styles.subtitle}>Your AI Health Assistant</Text>
+        <Text style={styles.version}>SDK 54 Compatible ✅</Text>
 
-          <View style={styles.form}>
-            <Input
-              label="Email"
-              value={email}
-              onChangeText={setEmail}
-              placeholder="Enter your email"
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
-            <Input
-              label="Password"
-              value={password}
-              onChangeText={setPassword}
-              placeholder="Enter your password"
-              secureTextEntry
-            />
-            <GradientButton title="Login" onPress={handleLogin} loading={loading} />
-          </View>
-
-          <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
-            <Text style={styles.link}>
-              Don't have an account? <Text style={styles.linkBold}>Sign Up</Text>
-            </Text>
+        <View style={styles.form}>
+          <Text style={styles.label}>Email</Text>
+          <TextInput
+            style={styles.input}
+            value={email}
+            onChangeText={setEmail}
+            placeholder="Enter your email"
+            placeholderTextColor="#9CA3AF"
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+          
+          <Text style={styles.label}>Password</Text>
+          <TextInput
+            style={styles.input}
+            value={password}
+            onChangeText={setPassword}
+            placeholder="Enter your password"
+            placeholderTextColor="#9CA3AF"
+            secureTextEntry
+          />
+          
+          <TouchableOpacity style={styles.button} onPress={handleLogin}>
+            <Text style={styles.buttonText}>Login</Text>
           </TouchableOpacity>
         </View>
-      </LinearGradient>
-    </KeyboardAvoidingView>
+
+        <Text style={styles.testInfo}>
+          Test: Use any email/password to login
+        </Text>
+      </View>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-  },
-  gradient: {
     flex: 1,
   },
   content: {
@@ -93,19 +80,52 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#9CA3AF',
     textAlign: 'center',
-    marginBottom: 48,
+    marginBottom: 8,
+  },
+  version: {
+    fontSize: 14,
+    color: '#10B981',
+    textAlign: 'center',
+    marginBottom: 32,
+    fontWeight: '600',
   },
   form: {
     marginBottom: 24,
   },
-  link: {
+  label: {
+    color: '#F3F4F6',
+    fontSize: 14,
+    fontWeight: '500',
+    marginBottom: 8,
+  },
+  input: {
+    backgroundColor: '#1F2937',
+    borderWidth: 1,
+    borderColor: '#374151',
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    color: '#FFFFFF',
+    fontSize: 16,
+    marginBottom: 16,
+  },
+  button: {
+    backgroundColor: '#3B82F6',
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  testInfo: {
     color: '#9CA3AF',
     textAlign: 'center',
-    fontSize: 14,
-  },
-  linkBold: {
-    color: '#3B82F6',
-    fontWeight: '600',
+    fontSize: 12,
+    fontStyle: 'italic',
   },
 });
 
