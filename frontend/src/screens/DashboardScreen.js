@@ -270,19 +270,6 @@ const DashboardScreen = ({ navigation }) => {
               </LinearGradient>
             </TouchableOpacity>
             
-            {/* Emergency button in sidebar */}
-            <TouchableOpacity 
-              style={styles.sidebarEmergencyButton}
-              onPress={() => {
-                setShowEmergency(true);
-                setShowSidebar(false);
-              }}
-            >
-              <LinearGradient colors={['#EF4444', '#DC2626']} style={styles.sidebarEmergencyGradient}>
-                <Text style={styles.sidebarEmergencyText}>🚨 Emergency Contacts</Text>
-              </LinearGradient>
-            </TouchableOpacity>
-            
             <ScrollView style={styles.conversationsList}>
               {conversations.map((conversation) => (
                 <TouchableOpacity
@@ -302,7 +289,21 @@ const DashboardScreen = ({ navigation }) => {
               ))}
             </ScrollView>
             
-            <View style={styles.profileSection}>
+            {/* Bottom section with proper spacing */}
+            <View style={styles.bottomSection}>
+              {/* Emergency button */}
+              <TouchableOpacity 
+                style={styles.sidebarEmergencyButton}
+                onPress={() => {
+                  setShowEmergency(true);
+                  setShowSidebar(false);
+                }}
+              >
+                <LinearGradient colors={['#EF4444', '#DC2626']} style={styles.sidebarEmergencyGradient}>
+                  <Text style={styles.sidebarEmergencyText}>🚨 Emergency Contacts</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+              
               {/* Profile dropdown menu items - only show when profile is clicked */}
               {showProfile && (
                 <View style={styles.profileDropdown}>
@@ -332,7 +333,7 @@ const DashboardScreen = ({ navigation }) => {
                 </View>
               )}
               
-              {/* User info at bottom - clickable to show dropdown */}
+              {/* User info at very bottom - clickable to show dropdown */}
               <TouchableOpacity 
                 style={styles.userInfoContainer}
                 onPress={() => setShowProfile(!showProfile)}
@@ -667,34 +668,18 @@ const styles = StyleSheet.create({
     color: '#6B7280',
   },
   headerRight: {
-    alignItems: 'flex-end',
-    minWidth: 80,
-  },
-  emergencyButton: {
-    borderRadius: 12,
-    overflow: 'hidden',
-    marginBottom: 4,
-  },
-  emergencyGradient: {
-    paddingVertical: 6,
-    paddingHorizontal: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  emergencyButtonText: {
-    color: '#FFFFFF',
-    fontSize: 11,
-    fontWeight: '600',
-  },
   brandBadge: {
     backgroundColor: '#3B82F6',
-    paddingVertical: 2,
-    paddingHorizontal: 6,
-    borderRadius: 6,
+    paddingVertical: 4,
+    paddingHorizontal: 12,
+    borderRadius: 8,
   },
   brandBadgeText: {
     color: '#FFFFFF',
-    fontSize: 8,
+    fontSize: 10,
     fontWeight: 'bold',
   },
   chatContainer: {
@@ -948,32 +933,17 @@ const styles = StyleSheet.create({
   },
   newConversationButton: {
     marginHorizontal: 20,
-    marginBottom: 12,
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  newConversationGradient: {
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  newConversationText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  sidebarEmergencyButton: {
-    marginHorizontal: 20,
     marginBottom: 20,
     borderRadius: 12,
     overflow: 'hidden',
   },
-  sidebarEmergencyGradient: {
-    paddingVertical: 12,
+  newConversationGradient: {
+    paddingVertical: 14,
     alignItems: 'center',
   },
-  sidebarEmergencyText: {
+  newConversationText: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '600',
   },
   conversationsList: {
@@ -1005,9 +975,26 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     fontSize: 10,
   },
-  profileSection: {
+  bottomSection: {
     borderTopWidth: 1,
     borderTopColor: '#374151',
+    paddingTop: 20,
+    marginTop: 20,
+  },
+  sidebarEmergencyButton: {
+    marginHorizontal: 20,
+    marginBottom: 16,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  sidebarEmergencyGradient: {
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  sidebarEmergencyText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
   },
   profileDropdown: {
     backgroundColor: '#374151',
