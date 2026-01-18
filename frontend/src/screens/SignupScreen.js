@@ -11,6 +11,18 @@ const SignupScreen = ({ navigation }) => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [acceptTerms, setAcceptTerms] = useState(false);
+
+  const getPasswordStrength = (password) => {
+    if (password.length < 6) return { strength: 'Weak', color: '#EF4444' };
+    if (password.length < 8) return { strength: 'Medium', color: '#F59E0B' };
+    return { strength: 'Strong', color: '#10B981' };
+  };
+
+  const validateUsername = (username) => {
+    const regex = /^[a-zA-Z0-9_]{3,}$/;
+    return regex.test(username);
+  };
 
   const handleSignup = async () => {
     if (!username || !email || !password || !confirmPassword) {
@@ -18,8 +30,23 @@ const SignupScreen = ({ navigation }) => {
       return;
     }
 
+    if (!validateUsername(username)) {
+      Alert.alert('Invalid Username', 'Username must be 3+ characters with letters, numbers, or underscores only');
+      return;
+    }
+
+    if (password.length < 6) {
+      Alert.alert('Weak Password', 'Password must be at least 6 characters long');
+      return;
+    }
+
     if (password !== confirmPassword) {
       Alert.alert('Error', 'Passwords do not match');
+      return;
+    }
+
+    if (!acceptTerms) {
+      Alert.alert('Terms Required', 'Please accept the terms and conditions');
       return;
     }
 
@@ -36,6 +63,8 @@ const SignupScreen = ({ navigation }) => {
     }
   };
 
+  const passwordStrength = getPasswordStrength(password);
+
   return (
     <KeyboardAvoidingView 
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -44,6 +73,10 @@ const SignupScreen = ({ navigation }) => {
       <LinearGradient colors={['#111827', '#1F2937']} style={styles.gradient}>
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <View style={styles.content}>
+            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+              <Text style={styles.backText}>← Back</Text>
+            </TouchableOpacity>
+
             <Text style={styles.title}>Create Account</Text>
             <Text style={styles.subtitle}>Join SymptomAI today</Text>
 
@@ -53,6 +86,7 @@ const SignupScreen = ({ navigation }) => {
                 value={username}
                 onChangeText={setUsername}
                 placeholder="Enter your name"
+                error={username && !validateUsername(username) ? 'Username must be 3+ characters, letters/numbers/underscores only' : null}
               />
               <Input
                 label="Email"
@@ -69,13 +103,47 @@ const SignupScreen = ({ navigation }) => {
                 placeholder="Create a password"
                 secureTextEntry
               />
+              
+              {password.length > 0 && (
+                <View style={styles.passwordStrength}>
+                  <Text style={[styles.strengthText, { color: passwordStrength.color }]}>
+                    Password Strength: {passwordStrength.strength}
+                  </Text>
+                  <View style={styles.strengthBar}>
+                    <View 
+                      style={[
+                        styles.strengthFill, 
+                        { 
+                          width: password.length < 6 ? '33%' : password.length < 8 ? '66%' : '100%',
+                          backgroundColor: passwordStrength.color 
+                        }
+                      ]} 
+                    />
+                  </View>
+                </View>
+              )}
+
               <Input
                 label="Confirm Password"
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
                 placeholder="Confirm your password"
                 secureTextEntry
+                error={confirmPassword && password !== confirmPassword ? 'Passwords do not match' : null}
               />
+
+              <TouchableOpacity 
+                style={styles.checkboxContainer}
+                onPress={() => setAcceptTerms(!acceptTerms)}
+              >
+                <View style={[styles.checkbox, acceptTerms && styles.checkedBox]}>
+                  {acceptTerms && <Text style={styles.checkmark}>✓</Text>}
+                </View>
+                <Text style={styles.checkboxText}>
+                  I accept the <Text style={styles.linkText}>Terms & Conditions</Text>
+                </Text>
+              </TouchableOpacity>
+
               <GradientButton title="Sign Up" onPress={handleSignup} loading={loading} />
             </View>
 
@@ -107,6 +175,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 40,
   },
+  backButton: {
+    marginBottom: 20,
+  },
+  backText: {
+    color: '#3B82F6',
+    fontSize: 16,
+    fontWeight: '600',
+  },
   title: {
     fontSize: 36,
     fontWeight: 'bold',
@@ -122,6 +198,57 @@ const styles = StyleSheet.create({
   },
   form: {
     marginBottom: 24,
+  },
+  passwordStrength: {
+    marginBottom: 16,
+  },
+  strengthText: {
+    fontSize: 12,
+    fontWeight: '500',
+    marginBottom: 4,
+  },
+  strengthBar: {
+    height: 4,
+    backgroundColor: '#374151',
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  strengthFill: {
+    height: '100%',
+    borderRadius: 2,
+  },
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderRadius: 4,
+    borderWidth: 2,
+    borderColor: '#374151',
+    backgroundColor: 'transparent',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  checkedBox: {
+    backgroundColor: '#3B82F6',
+    borderColor: '#3B82F6',
+  },
+  checkmark: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  checkboxText: {
+    color: '#D1D5DB',
+    fontSize: 14,
+  },
+  linkText: {
+    color: '#3B82F6',
+    fontWeight: '600',
   },
   link: {
     color: '#9CA3AF',
