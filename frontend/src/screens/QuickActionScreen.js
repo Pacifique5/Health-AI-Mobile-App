@@ -233,12 +233,6 @@ const QuickActionScreen = ({ route, navigation }) => {
           <LinearGradient colors={config.color} style={styles.header}>
             <Text style={styles.headerIcon}>{config.icon}</Text>
             <Text style={styles.headerTitle}>{config.title}</Text>
-            <TouchableOpacity 
-              style={styles.closeButton}
-              onPress={() => navigation.goBack()}
-            >
-              <Text style={styles.closeIcon}>✕</Text>
-            </TouchableOpacity>
           </LinearGradient>
           
           {/* Content */}
@@ -288,16 +282,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 20,
     paddingTop: 12,
-  },
-  closeButton: {
-    padding: 12,
-    borderRadius: 25,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-  },
-  closeIcon: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: 'bold',
   },
   headerIcon: {
     fontSize: 28,

@@ -7,7 +7,7 @@ import {
   ScrollView, 
   Alert, 
   TextInput, 
-  Modal, 
+  Modal,
   Dimensions,
   KeyboardAvoidingView,
   Platform,
@@ -16,17 +16,14 @@ import {
 } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
 import { AuthContext } from '../context/AuthContext';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 const DashboardScreen = ({ navigation }) => {
   const { user, logoutUser } = useContext(AuthContext);
   const [showSidebar, setShowSidebar] = useState(false);
-  const [showEmergency, setShowEmergency] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -100,36 +97,6 @@ const DashboardScreen = ({ navigation }) => {
     },
   ];
 
-  const emergencyContacts = [
-    { 
-      name: 'Emergency Services', 
-      phone: '911', 
-      description: 'Life-threatening emergencies', 
-      urgent: true,
-      icon: '🚨'
-    },
-    { 
-      name: 'Rwanda Emergency', 
-      phone: '912', 
-      description: 'National emergency line', 
-      urgent: true,
-      icon: '🇷🇼'
-    },
-    { 
-      name: 'Poison Control', 
-      phone: '1-800-222-1222', 
-      description: 'Poisoning emergencies', 
-      urgent: false,
-      icon: '☠️'
-    },
-    { 
-      name: 'Mental Health Crisis', 
-      phone: '988', 
-      description: '24/7 crisis support', 
-      urgent: false,
-      icon: '🧠'
-    },
-  ];
 
   useEffect(() => {
     if (showSidebar) {
@@ -298,7 +265,7 @@ const DashboardScreen = ({ navigation }) => {
               <TouchableOpacity 
                 style={styles.emergencyContactsButton}
                 onPress={() => {
-                  setShowEmergency(true);
+                  navigation.navigate('EmergencyContacts');
                   setShowSidebar(false);
                 }}
               >
@@ -339,7 +306,6 @@ const DashboardScreen = ({ navigation }) => {
                   </TouchableOpacity>
                   <TouchableOpacity 
                     style={styles.dropdownItem}
-                    onPress={() => setShowSettings(true)}
                   >
                     <Text style={styles.dropdownIcon}>⚙️</Text>
                     <Text style={styles.dropdownText}>Settings</Text>
@@ -362,72 +328,6 @@ const DashboardScreen = ({ navigation }) => {
           </TouchableOpacity>
         </Animated.View>
       </TouchableOpacity>
-    </Modal>
-  );
-
-  const renderEmergencyModal = () => (
-    <Modal
-      visible={showEmergency}
-      transparent
-      animationType="slide"
-      onRequestClose={() => setShowEmergency(false)}
-    >
-      <BlurView intensity={20} style={styles.modalOverlay}>
-        <View style={styles.emergencyModal}>
-          <LinearGradient colors={['#DC2626', '#EF4444']} style={styles.emergencyHeader}>
-            <Text style={styles.emergencyIcon}>🚨</Text>
-            <Text style={styles.emergencyTitle}>Emergency Contacts</Text>
-            <TouchableOpacity 
-              style={styles.modalCloseButton}
-              onPress={() => setShowEmergency(false)}
-            >
-              <Text style={styles.modalCloseText}>✕</Text>
-            </TouchableOpacity>
-          </LinearGradient>
-          
-          <ScrollView style={styles.emergencyContent}>
-            <View style={styles.emergencyInfo}>
-              <Text style={styles.emergencyInfoTitle}>⚠️ When to Call Emergency Services</Text>
-              <Text style={styles.emergencyInfoText}>
-                Call immediately if you experience: chest pain, difficulty breathing, severe bleeding, 
-                loss of consciousness, severe allergic reactions, or any life-threatening emergency.
-              </Text>
-            </View>
-            
-            {emergencyContacts.map((contact, index) => (
-              <TouchableOpacity key={index} style={styles.emergencyContact}>
-                <View style={styles.emergencyContactInfo}>
-                  <Text style={styles.emergencyContactName}>{contact.name}</Text>
-                  {contact.urgent && (
-                    <Text style={styles.urgentBadge}>URGENT</Text>
-                  )}
-                  <Text style={styles.emergencyContactDesc}>{contact.description}</Text>
-                </View>
-                <View style={styles.emergencyContactPhoneBadge}>
-                  <Text style={styles.emergencyContactPhoneText}>{contact.phone}</Text>
-                </View>
-              </TouchableOpacity>
-            ))}
-            
-            <View style={styles.additionalResources}>
-              <Text style={styles.resourcesTitle}>Additional Resources</Text>
-              <TouchableOpacity style={styles.resourceButton}>
-                <Text style={styles.resourceButtonText}>🏥 Find Nearest Hospital</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.resourceButton}>
-                <Text style={styles.resourceButtonText}>🚑 Urgent Care Locator</Text>
-              </TouchableOpacity>
-            </View>
-            
-            <View style={styles.rwandaNote}>
-              <Text style={styles.rwandaNoteText}>
-                🏥 For immediate life-threatening emergencies, call 116 immediately.
-                Emergency services in Rwanda: Police (112), Fire (113), Medical (114)
-              </Text>
-            </View>
-          </ScrollView>
-        </View>
-      </BlurView>
     </Modal>
   );
 
@@ -582,7 +482,6 @@ const DashboardScreen = ({ navigation }) => {
 
           {/* Modals */}
           {renderSidebar()}
-          {renderEmergencyModal()}
         </LinearGradient>
       </SafeAreaView>
     </SafeAreaProvider>
@@ -1193,185 +1092,6 @@ const styles = StyleSheet.create({
     color: '#94A3B8',
     fontSize: 18,
     fontWeight: 'bold',
-  },
-  // Emergency Modal Styles - Full Screen
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.2)',
-  },
-  emergencyModal: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-    marginTop: 30,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    overflow: 'hidden',
-    elevation: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -5 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-  },
-  emergencyHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 10,
-    paddingTop: 10,
-  },
-  emergencyIcon: {
-    fontSize: 32,
-    marginRight: 16,
-  },
-  emergencyTitle: {
-    flex: 1,
-    color: '#FFFFFF',
-    fontSize: 22,
-    fontWeight: 'bold',
-    letterSpacing: 0.5,
-  },
-  modalCloseButton: {
-    padding: 12,
-    borderRadius: 25,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-  },
-  modalCloseText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  emergencyContent: {
-    flex: 1,
-    paddingHorizontal: 24,
-    paddingTop: 20,
-  },
-  emergencyInfo: {
-    backgroundColor: '#FEF3C7',
-    borderRadius: 20,
-    padding: 24,
-    marginBottom: 32,
-    borderLeftWidth: 6,
-    borderLeftColor: '#F59E0B',
-  },
-  emergencyInfoTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#92400E',
-    marginBottom: 12,
-  },
-  emergencyInfoText: {
-    fontSize: 16,
-    color: '#92400E',
-    lineHeight: 24,
-  },
-  emergencyContact: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 24,
-    marginBottom: 20,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderLeftWidth: 6,
-    borderLeftColor: '#EF4444',
-    elevation: 6,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    minHeight: 100,
-  },
-  emergencyContactInfo: {
-    flex: 1,
-  },
-  emergencyContactName: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#111827',
-    marginBottom: 8,
-  },
-  urgentBadge: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#EF4444',
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: 'bold',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-    overflow: 'hidden',
-    marginBottom: 8,
-  },
-  emergencyContactDesc: {
-    fontSize: 16,
-    color: '#6B7280',
-    lineHeight: 22,
-  },
-  emergencyContactPhoneBadge: {
-    backgroundColor: '#EF4444',
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    borderRadius: 30,
-    minWidth: 100,
-    alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#EF4444',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-  },
-  emergencyContactPhoneText: {
-    color: '#FFFFFF',
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  additionalResources: {
-    marginTop: 40,
-    paddingTop: 32,
-    borderTopWidth: 2,
-    borderTopColor: '#E5E7EB',
-  },
-  resourcesTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#111827',
-    marginBottom: 24,
-    letterSpacing: 0.3,
-  },
-  resourceButton: {
-    backgroundColor: '#3B82F6',
-    borderRadius: 20,
-    paddingVertical: 20,
-    paddingHorizontal: 28,
-    marginBottom: 20,
-    elevation: 6,
-    shadowColor: '#3B82F6',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    minHeight: 64,
-    justifyContent: 'center',
-  },
-  resourceButtonText: {
-    color: '#FFFFFF',
-    fontSize: 17,
-    fontWeight: '600',
-    textAlign: 'center',
-    letterSpacing: 0.3,
-  },
-  rwandaNote: {
-    backgroundColor: '#DBEAFE',
-    borderRadius: 20,
-    padding: 24,
-    marginTop: 24,
-    marginBottom: 60,
-    borderLeftWidth: 6,
-    borderLeftColor: '#3B82F6',
-  },
-  rwandaNoteText: {
-    fontSize: 16,
-    color: '#1E40AF',
-    lineHeight: 24,
   },
 });
 
