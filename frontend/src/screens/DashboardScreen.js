@@ -5,14 +5,14 @@ import {
   StyleSheet, 
   TouchableOpacity, 
   ScrollView, 
-  Alert, 
+  Alert,
   TextInput, 
-  Modal,
   Dimensions,
   KeyboardAvoidingView,
   Platform,
-  Animated,
-  StatusBar
+  StatusBar,
+  Modal,
+  Animated
 } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -20,7 +20,7 @@ import { AuthContext } from '../context/AuthContext';
 
 const { width } = Dimensions.get('window');
 
-const DashboardScreen = ({ navigation }) => {
+const DashboardScreen = ({ navigation, route }) => {
   const { user, logoutUser } = useContext(AuthContext);
   const [showSidebar, setShowSidebar] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
@@ -114,6 +114,24 @@ const DashboardScreen = ({ navigation }) => {
     }
   }, [showSidebar]);
 
+  useEffect(() => {
+    // Handle navigation from sidebar
+    if (route.params?.newConversation) {
+      setMessages([]);
+      setCurrentConversation(null);
+      setShowSidebar(false);
+      // Clear the parameter to prevent repeated execution
+      navigation.setParams({ newConversation: undefined });
+    } else if (route.params?.selectedConversation) {
+      const conversation = route.params.selectedConversation;
+      setMessages(conversation.messages);
+      setCurrentConversation(conversation);
+      setShowSidebar(false);
+      // Clear the parameter to prevent repeated execution
+      navigation.setParams({ selectedConversation: undefined });
+    }
+  }, [route.params]);
+
   const handleSendMessage = () => {
     if (!inputText.trim()) return;
     
@@ -158,14 +176,14 @@ const DashboardScreen = ({ navigation }) => {
     setMessages([]);
     setCurrentConversation(null);
     setShowSidebar(false);
-    setShowProfile(false); // Reset profile dropdown
+    setShowProfile(false);
   };
 
   const handleSelectConversation = (conversation) => {
     setMessages(conversation.messages);
     setCurrentConversation(conversation);
     setShowSidebar(false);
-    setShowProfile(false); // Reset profile dropdown
+    setShowProfile(false);
   };
 
   const toggleProfile = () => {
@@ -189,21 +207,6 @@ const DashboardScreen = ({ navigation }) => {
       ]
     );
   };
-
-  const renderTypingIndicator = () => (
-    <View style={styles.typingContainer}>
-      <View style={styles.messageAvatar}>
-        <Text style={styles.messageAvatarText}>🤖</Text>
-      </View>
-      <View style={styles.typingBubble}>
-        <View style={styles.typingDots}>
-          <Animated.View style={[styles.typingDot]} />
-          <Animated.View style={[styles.typingDot]} />
-          <Animated.View style={[styles.typingDot]} />
-        </View>
-      </View>
-    </View>
-  );
 
   const renderSidebar = () => (
     <Modal
@@ -240,28 +243,35 @@ const DashboardScreen = ({ navigation }) => {
               </LinearGradient>
             </TouchableOpacity>
             
-            <ScrollView style={styles.conversationsList}>
-              {conversations.map((conversation) => (
-                <TouchableOpacity
-                  key={conversation.id}
-                  style={[
-                    styles.conversationItem,
-                    currentConversation?.id === conversation.id && styles.activeConversation
-                  ]}
-                  onPress={() => handleSelectConversation(conversation)}
-                >
-                  <Text style={styles.conversationTitle}>{conversation.title}</Text>
-                  <Text style={styles.conversationPreview} numberOfLines={1}>
-                    {conversation.lastMessage}
-                  </Text>
-                  <Text style={styles.conversationTime}>{conversation.time}</Text>
-                </TouchableOpacity>
-              ))}
+            <ScrollView style={styles.conversationsList} showsVerticalScrollIndicator={false}>
+              {conversations.length > 0 ? (
+                conversations.map((conversation) => (
+                  <TouchableOpacity
+                    key={conversation.id}
+                    style={[
+                      styles.conversationItem,
+                      currentConversation?.id === conversation.id && styles.activeConversation
+                    ]}
+                    onPress={() => handleSelectConversation(conversation)}
+                  >
+                    <Text style={styles.conversationTitle}>{conversation.title}</Text>
+                    <Text style={styles.conversationPreview} numberOfLines={1}>
+                      {conversation.lastMessage}
+                    </Text>
+                    <Text style={styles.conversationTime}>{conversation.time}</Text>
+                  </TouchableOpacity>
+                ))
+              ) : (
+                <View style={styles.noConversations}>
+                  <Text style={styles.noConversationsText}>No conversations yet</Text>
+                  <Text style={styles.noConversationsSubtext}>Start a new conversation to see it here</Text>
+                </View>
+              )}
             </ScrollView>
             
-            {/* Bottom section with proper spacing */}
+            {/* Bottom section */}
             <View style={styles.bottomSection}>
-              {/* Emergency Contacts Button - Separate from admin user */}
+              {/* Emergency Contacts Button */}
               <TouchableOpacity 
                 style={styles.emergencyContactsButton}
                 onPress={() => {
@@ -278,7 +288,7 @@ const DashboardScreen = ({ navigation }) => {
                 </View>
               </TouchableOpacity>
               
-              {/* User info at very bottom - clickable to show dropdown */}
+              {/* User info - clickable to show dropdown */}
               <TouchableOpacity 
                 style={styles.userInfoContainer}
                 onPress={toggleProfile}
@@ -297,16 +307,10 @@ const DashboardScreen = ({ navigation }) => {
                 </View>
               </TouchableOpacity>
               
-              {/* Profile dropdown menu items - only show when profile is clicked */}
+              {/* Profile dropdown menu items */}
               {showProfile && (
                 <View style={styles.profileDropdown}>
                   <TouchableOpacity style={styles.dropdownItem}>
-                    <Text style={styles.dropdownIcon}>📱</Text>
-                    <Text style={styles.dropdownText}>Download mobile App</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={styles.dropdownItem}
-                  >
                     <Text style={styles.dropdownIcon}>⚙️</Text>
                     <Text style={styles.dropdownText}>Settings</Text>
                   </TouchableOpacity>
@@ -329,6 +333,21 @@ const DashboardScreen = ({ navigation }) => {
         </Animated.View>
       </TouchableOpacity>
     </Modal>
+  );
+
+  const renderTypingIndicator = () => (
+    <View style={styles.typingContainer}>
+      <View style={styles.messageAvatar}>
+        <Text style={styles.messageAvatarText}>🤖</Text>
+      </View>
+      <View style={styles.typingBubble}>
+        <View style={styles.typingDots}>
+          <Animated.View style={[styles.typingDot]} />
+          <Animated.View style={[styles.typingDot]} />
+          <Animated.View style={[styles.typingDot]} />
+        </View>
+      </View>
+    </View>
   );
 
   return (
@@ -480,7 +499,7 @@ const DashboardScreen = ({ navigation }) => {
             </Text>
           </View>
 
-          {/* Modals */}
+          {/* Sidebar */}
           {renderSidebar()}
         </LinearGradient>
       </SafeAreaView>
@@ -837,15 +856,17 @@ const styles = StyleSheet.create({
     lineHeight: 16,
     fontStyle: 'italic',
   },
-  // Sidebar Styles - Clean and Professional
+  // Sidebar Styles - Slide from left, 80% width with curves
   sidebarOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   sidebar: {
-    width: width * 0.90,
+    width: width * 0.8,
     height: '100%',
     backgroundColor: '#1E293B',
+    borderTopRightRadius: 20,
+    borderBottomRightRadius: 20,
     elevation: 20,
     shadowColor: '#000',
     shadowOffset: { width: 5, height: 0 },
@@ -856,28 +877,28 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
     paddingTop: 60,
-    paddingBottom: 24,
+    paddingBottom: 20,
     borderBottomWidth: 1,
     borderBottomColor: '#334155',
   },
   sidebarTitle: {
     color: '#FFFFFF',
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     letterSpacing: 0.5,
   },
   closeButton: {
     color: '#94A3B8',
-    fontSize: 24,
+    fontSize: 20,
     padding: 4,
   },
   newConversationButton: {
-    marginHorizontal: 24,
-    marginTop: 20,
-    marginBottom: 24,
-    borderRadius: 14,
+    marginHorizontal: 16,
+    marginTop: 16,
+    marginBottom: 20,
+    borderRadius: 12,
     overflow: 'hidden',
     elevation: 4,
     shadowColor: '#10B981',
@@ -886,78 +907,96 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   newConversationGradient: {
-    paddingVertical: 16,
+    paddingVertical: 14,
     alignItems: 'center',
   },
   newConversationText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '700',
     letterSpacing: 0.5,
   },
   conversationsList: {
     flex: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: 16,
   },
   conversationItem: {
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    marginBottom: 8,
-    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    marginBottom: 6,
+    borderRadius: 10,
     backgroundColor: 'rgba(51, 65, 85, 0.3)',
   },
   activeConversation: {
     backgroundColor: '#334155',
-    borderLeftWidth: 4,
+    borderLeftWidth: 3,
     borderLeftColor: '#10B981',
   },
   conversationTitle: {
     color: '#FFFFFF',
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '600',
-    marginBottom: 6,
+    marginBottom: 4,
     letterSpacing: 0.3,
   },
   conversationPreview: {
     color: '#94A3B8',
-    fontSize: 13,
-    marginBottom: 6,
-    lineHeight: 18,
+    fontSize: 12,
+    marginBottom: 4,
+    lineHeight: 16,
   },
   conversationTime: {
     color: '#64748B',
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '500',
   },
+  noConversations: {
+    alignItems: 'center',
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+  },
+  noConversationsText: {
+    color: '#94A3B8',
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  noConversationsSubtext: {
+    color: '#64748B',
+    fontSize: 12,
+    textAlign: 'center',
+    lineHeight: 18,
+  },
   bottomSection: {
-    paddingTop: 24,
+    paddingTop: 16,
     borderTopWidth: 1,
     borderTopColor: '#334155',
   },
   emergencyContactsButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    marginHorizontal: 16,
-    marginBottom: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    marginHorizontal: 12,
+    marginBottom: 12,
     backgroundColor: '#334155',
-    borderRadius: 16,
+    borderRadius: 12,
     elevation: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
-    minHeight: 80,
+    minHeight: 60,
   },
   emergencyAvatar: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: '#EF4444',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
+    marginRight: 12,
     elevation: 2,
     shadowColor: '#EF4444',
     shadowOffset: { width: 0, height: 2 },
@@ -965,7 +1004,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   emergencyAvatarText: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: 'bold',
   },
   emergencyDetails: {
@@ -973,85 +1012,45 @@ const styles = StyleSheet.create({
   },
   emergencyName: {
     color: '#FFFFFF',
-    fontSize: 17,
+    fontSize: 14,
     fontWeight: '600',
-    marginBottom: 6,
+    marginBottom: 4,
     letterSpacing: 0.3,
   },
   emergencyStatus: {
     color: '#10B981',
-    fontSize: 14,
+    fontSize: 11,
     fontWeight: '500',
     backgroundColor: 'rgba(16, 185, 129, 0.1)',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
     alignSelf: 'flex-start',
-  },
-  profileDropdown: {
-    backgroundColor: '#334155',
-    marginHorizontal: 16,
-    marginBottom: 16,
-    borderRadius: 16,
-    overflow: 'hidden',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    maxHeight: 300,
-  },
-  dropdownItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 18,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(71, 85, 105, 0.5)',
-    minHeight: 60,
-  },
-  dropdownIcon: {
-    fontSize: 20,
-    marginRight: 20,
-    width: 28,
-    textAlign: 'center',
-  },
-  dropdownText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '500',
-    letterSpacing: 0.3,
-    flex: 1,
-  },
-  dropdownDivider: {
-    height: 1,
-    backgroundColor: '#475569',
-    marginVertical: 4,
   },
   userInfoContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    marginHorizontal: 16,
-    marginBottom: 24,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    marginHorizontal: 12,
+    marginBottom: 16,
     backgroundColor: '#334155',
-    borderRadius: 16,
+    borderRadius: 12,
     elevation: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
-    minHeight: 80,
+    minHeight: 60,
   },
   avatar: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: '#3B82F6',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
+    marginRight: 12,
     elevation: 2,
     shadowColor: '#3B82F6',
     shadowOffset: { width: 0, height: 2 },
@@ -1060,7 +1059,7 @@ const styles = StyleSheet.create({
   },
   avatarText: {
     color: '#FFFFFF',
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: 'bold',
   },
   userDetails: {
@@ -1068,30 +1067,69 @@ const styles = StyleSheet.create({
   },
   userName: {
     color: '#FFFFFF',
-    fontSize: 17,
+    fontSize: 14,
     fontWeight: '600',
-    marginBottom: 6,
+    marginBottom: 4,
     letterSpacing: 0.3,
   },
   userStatus: {
     color: '#10B981',
-    fontSize: 14,
+    fontSize: 11,
     fontWeight: '500',
     backgroundColor: 'rgba(16, 185, 129, 0.1)',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
     alignSelf: 'flex-start',
   },
   expandButton: {
-    padding: 12,
-    borderRadius: 25,
+    padding: 8,
+    borderRadius: 20,
     backgroundColor: 'rgba(148, 163, 184, 0.1)',
   },
   expandIcon: {
     color: '#94A3B8',
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: 'bold',
+  },
+  profileDropdown: {
+    backgroundColor: '#334155',
+    marginHorizontal: 12,
+    marginBottom: 12,
+    borderRadius: 12,
+    overflow: 'hidden',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  dropdownItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(71, 85, 105, 0.5)',
+    minHeight: 48,
+  },
+  dropdownIcon: {
+    fontSize: 16,
+    marginRight: 12,
+    width: 20,
+    textAlign: 'center',
+  },
+  dropdownText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '500',
+    letterSpacing: 0.3,
+    flex: 1,
+  },
+  dropdownDivider: {
+    height: 1,
+    backgroundColor: '#475569',
+    marginVertical: 2,
   },
 });
 

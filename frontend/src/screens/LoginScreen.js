@@ -93,14 +93,6 @@ const LoginScreen = ({ navigation }) => {
         
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <View style={styles.content}>
-            {/* Back Button */}
-            <TouchableOpacity 
-              style={styles.backButton}
-              onPress={() => navigation.navigate('Landing')}
-            >
-              <Text style={styles.backButtonText}>← Back</Text>
-            </TouchableOpacity>
-
             {/* Logo Section */}
             <View style={styles.logoSection}>
               <View style={styles.logoContainer}>
@@ -222,14 +214,6 @@ const LoginScreen = ({ navigation }) => {
                 <Text style={styles.createAccountText}>Create an account</Text>
               </TouchableOpacity>
 
-              {/* Back to Home */}
-              <TouchableOpacity 
-                style={styles.backToHome}
-                onPress={() => navigation.navigate('Landing')}
-              >
-                <Text style={styles.backToHomeText}>← Back to home</Text>
-              </TouchableOpacity>
-
               {/* Trust Badge */}
               <View style={styles.trustBadge}>
                 <Text style={styles.trustText}>🔒 Your data is secure and encrypted</Text>
@@ -275,16 +259,6 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 24,
     paddingVertical: 40,
-  },
-  backButton: {
-    alignSelf: 'flex-start',
-    marginBottom: 20,
-    padding: 8,
-  },
-  backButtonText: {
-    fontSize: 16,
-    color: '#3B82F6',
-    fontWeight: '600',
   },
   logoSection: {
     alignItems: 'center',
@@ -459,14 +433,6 @@ const styles = StyleSheet.create({
     color: '#3B82F6',
     fontWeight: '600',
     textAlign: 'center',
-  },
-  backToHome: {
-    alignItems: 'center',
-    marginTop: 16,
-  },
-  backToHomeText: {
-    fontSize: 14,
-    color: '#6B7280',
   },
   trustBadge: {
     alignItems: 'center',

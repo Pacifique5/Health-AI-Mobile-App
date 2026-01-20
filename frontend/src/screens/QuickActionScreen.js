@@ -15,7 +15,7 @@ const QuickActionScreen = ({ route, navigation }) => {
           title: 'Check Symptoms',
           icon: '🔍',
           color: ['#3B82F6', '#06B6D4'],
-          buttonText: 'Analyze Symptoms',
+          buttonText: 'Symptoms',
           fields: [
             { key: 'symptoms', label: 'Describe your symptoms', type: 'textarea', required: true },
             { key: 'duration', label: 'How long have you had these symptoms?', type: 'picker', options: ['Less than 1 day', '1-3 days', '4-7 days', 'More than 1 week'] },
@@ -31,7 +31,7 @@ const QuickActionScreen = ({ route, navigation }) => {
           title: 'Heart Health Check',
           icon: '❤️',
           color: ['#EF4444', '#EC4899'],
-          buttonText: 'Get Heart Health Insights',
+          buttonText: 'Heart Health',
           fields: [
             { key: 'concerns', label: 'Heart health concerns', type: 'textarea', required: true },
             { key: 'age', label: 'Age', type: 'input' },
@@ -48,7 +48,7 @@ const QuickActionScreen = ({ route, navigation }) => {
           title: 'Preventive Care',
           icon: '🛡️',
           color: ['#10B981', '#059669'],
-          buttonText: 'Get Recommendations',
+          buttonText: 'Recommendation',
           fields: [
             { key: 'careType', label: 'Type of preventive care', type: 'picker', required: true, options: ['General wellness', 'Vaccination', 'Screening', 'Lifestyle advice'] },
             { key: 'ageGroup', label: 'Age group', type: 'picker', options: ['18-30', '31-50', '51-65', '65+'] },

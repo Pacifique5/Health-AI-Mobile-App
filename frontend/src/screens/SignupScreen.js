@@ -157,10 +157,6 @@ const SignupScreen = ({ navigation }) => {
       <LinearGradient colors={['#111827', '#1F2937']} style={styles.gradient}>
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <View style={styles.content}>
-            <TouchableOpacity onPress={() => navigation.navigate('Landing')} style={styles.backButton}>
-              <Text style={styles.backText}>← Back</Text>
-            </TouchableOpacity>
-
             <Text style={styles.title}>Create Account</Text>
             <Text style={styles.subtitle}>Join SymptomAI today</Text>
 
@@ -282,14 +278,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 24,
     paddingVertical: 40,
-  },
-  backButton: {
-    marginBottom: 20,
-  },
-  backText: {
-    color: '#3B82F6',
-    fontSize: 16,
-    fontWeight: '600',
   },
   title: {
     fontSize: 36,
