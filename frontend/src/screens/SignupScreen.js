@@ -12,6 +12,101 @@ const SignupScreen = ({ navigation }) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
+  const [usernameError, setUsernameError] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [confirmPasswordError, setConfirmPasswordError] = useState('');
+
+  // Email validation
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email) {
+      return 'Email is required';
+    }
+    if (!emailRegex.test(email)) {
+      return 'Please enter a valid email address';
+    }
+    return '';
+  };
+
+  // Username validation
+  const validateUsername = (username) => {
+    if (!username) {
+      return 'Username is required';
+    }
+    if (username.length < 3) {
+      return 'Username must be at least 3 characters long';
+    }
+    if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+      return 'Username can only contain letters, numbers, and underscores';
+    }
+    return '';
+  };
+
+  // Password validation
+  const validatePassword = (password) => {
+    if (!password) {
+      return 'Password is required';
+    }
+    if (password.length < 8) {
+      return 'Password must be at least 8 characters long';
+    }
+    if (!/(?=.*[a-z])/.test(password)) {
+      return 'Password must contain at least one lowercase letter';
+    }
+    if (!/(?=.*[A-Z])/.test(password)) {
+      return 'Password must contain at least one uppercase letter';
+    }
+    if (!/(?=.*\d)/.test(password)) {
+      return 'Password must contain at least one number';
+    }
+    if (!/(?=.*[@$!%*?&])/.test(password)) {
+      return 'Password must contain at least one special character (@$!%*?&)';
+    }
+    return '';
+  };
+
+  // Confirm password validation
+  const validateConfirmPassword = (confirmPassword, password) => {
+    if (!confirmPassword) {
+      return 'Please confirm your password';
+    }
+    if (confirmPassword !== password) {
+      return 'Passwords do not match';
+    }
+    return '';
+  };
+
+  const handleUsernameChange = (text) => {
+    setUsername(text);
+    if (usernameError) {
+      setUsernameError(validateUsername(text));
+    }
+  };
+
+  const handleEmailChange = (text) => {
+    setEmail(text);
+    if (emailError) {
+      setEmailError(validateEmail(text));
+    }
+  };
+
+  const handlePasswordChange = (text) => {
+    setPassword(text);
+    if (passwordError) {
+      setPasswordError(validatePassword(text));
+    }
+    if (confirmPassword) {
+      setConfirmPasswordError(validateConfirmPassword(confirmPassword, text));
+    }
+  };
+
+  const handleConfirmPasswordChange = (text) => {
+    setConfirmPassword(text);
+    if (confirmPasswordError) {
+      setConfirmPasswordError(validateConfirmPassword(text, password));
+    }
+  };
 
   const getPasswordStrength = (password) => {
     if (password.length < 6) return { strength: 'Weak', color: '#EF4444' };
@@ -19,29 +114,18 @@ const SignupScreen = ({ navigation }) => {
     return { strength: 'Strong', color: '#10B981' };
   };
 
-  const validateUsername = (username) => {
-    const regex = /^[a-zA-Z0-9_]{3,}$/;
-    return regex.test(username);
-  };
-
   const handleSignup = async () => {
-    if (!username || !email || !password || !confirmPassword) {
-      Alert.alert('Error', 'Please fill in all fields');
-      return;
-    }
+    const usernameErr = validateUsername(username);
+    const emailErr = validateEmail(email);
+    const passwordErr = validatePassword(password);
+    const confirmPasswordErr = validateConfirmPassword(confirmPassword, password);
+    
+    setUsernameError(usernameErr);
+    setEmailError(emailErr);
+    setPasswordError(passwordErr);
+    setConfirmPasswordError(confirmPasswordErr);
 
-    if (!validateUsername(username)) {
-      Alert.alert('Invalid Username', 'Username must be 3+ characters with letters, numbers, or underscores only');
-      return;
-    }
-
-    if (password.length < 6) {
-      Alert.alert('Weak Password', 'Password must be at least 6 characters long');
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
+    if (usernameErr || emailErr || passwordErr || confirmPasswordErr) {
       return;
     }
 
@@ -73,7 +157,7 @@ const SignupScreen = ({ navigation }) => {
       <LinearGradient colors={['#111827', '#1F2937']} style={styles.gradient}>
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <View style={styles.content}>
-            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <TouchableOpacity onPress={() => navigation.navigate('Landing')} style={styles.backButton}>
               <Text style={styles.backText}>← Back</Text>
             </TouchableOpacity>
 
@@ -84,25 +168,48 @@ const SignupScreen = ({ navigation }) => {
               <Input
                 label="Full Name"
                 value={username}
-                onChangeText={setUsername}
+                onChangeText={handleUsernameChange}
                 placeholder="Enter your name"
-                error={username && !validateUsername(username) ? 'Username must be 3+ characters, letters/numbers/underscores only' : null}
+                error={usernameError}
               />
               <Input
                 label="Email"
                 value={email}
-                onChangeText={setEmail}
+                onChangeText={handleEmailChange}
                 placeholder="Enter your email"
                 keyboardType="email-address"
                 autoCapitalize="none"
+                error={emailError}
               />
               <Input
                 label="Password"
                 value={password}
-                onChangeText={setPassword}
+                onChangeText={handlePasswordChange}
                 placeholder="Create a password"
                 secureTextEntry
+                error={passwordError}
               />
+              
+              {password && !passwordError && (
+                <View style={styles.passwordRequirements}>
+                  <Text style={styles.requirementsTitle}>Password Requirements:</Text>
+                  <Text style={[styles.requirement, password.length >= 8 && styles.requirementMet]}>
+                    ✓ At least 8 characters
+                  </Text>
+                  <Text style={[styles.requirement, /(?=.*[a-z])/.test(password) && styles.requirementMet]}>
+                    ✓ One lowercase letter
+                  </Text>
+                  <Text style={[styles.requirement, /(?=.*[A-Z])/.test(password) && styles.requirementMet]}>
+                    ✓ One uppercase letter
+                  </Text>
+                  <Text style={[styles.requirement, /(?=.*\d)/.test(password) && styles.requirementMet]}>
+                    ✓ One number
+                  </Text>
+                  <Text style={[styles.requirement, /(?=.*[@$!%*?&])/.test(password) && styles.requirementMet]}>
+                    ✓ One special character (@$!%*?&)
+                  </Text>
+                </View>
+              )}
               
               {password.length > 0 && (
                 <View style={styles.passwordStrength}>
@@ -126,10 +233,10 @@ const SignupScreen = ({ navigation }) => {
               <Input
                 label="Confirm Password"
                 value={confirmPassword}
-                onChangeText={setConfirmPassword}
+                onChangeText={handleConfirmPasswordChange}
                 placeholder="Confirm your password"
                 secureTextEntry
-                error={confirmPassword && password !== confirmPassword ? 'Passwords do not match' : null}
+                error={confirmPasswordError}
               />
 
               <TouchableOpacity 
@@ -168,6 +275,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
+    paddingBottom: 40,
   },
   content: {
     flex: 1,
@@ -198,6 +306,29 @@ const styles = StyleSheet.create({
   },
   form: {
     marginBottom: 24,
+  },
+  passwordRequirements: {
+    marginBottom: 16,
+    padding: 12,
+    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+    borderRadius: 8,
+    borderLeftWidth: 3,
+    borderLeftColor: '#3B82F6',
+  },
+  requirementsTitle: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#D1D5DB',
+    marginBottom: 4,
+  },
+  requirement: {
+    fontSize: 11,
+    color: '#9CA3AF',
+    marginBottom: 2,
+  },
+  requirementMet: {
+    color: '#10B981',
+    fontWeight: '500',
   },
   passwordStrength: {
     marginBottom: 16,

@@ -202,6 +202,10 @@ const DashboardScreen = ({ navigation }) => {
     setShowProfile(false); // Reset profile dropdown
   };
 
+  const toggleProfile = () => {
+    setShowProfile(!showProfile);
+  };
+
   const handleLogout = async () => {
     Alert.alert(
       'Logout',
@@ -291,7 +295,7 @@ const DashboardScreen = ({ navigation }) => {
             
             {/* Bottom section with proper spacing */}
             <View style={styles.bottomSection}>
-              {/* Emergency Contacts Button - Styled exactly like Admin User */}
+              {/* Emergency Contacts Button - Separate from admin user */}
               <TouchableOpacity 
                 style={styles.emergencyContactsButton}
                 onPress={() => {
@@ -304,6 +308,26 @@ const DashboardScreen = ({ navigation }) => {
                 </View>
                 <View style={styles.emergencyDetails}>
                   <Text style={styles.emergencyName}>Emergency Contacts</Text>
+                  <Text style={styles.emergencyStatus}>Available 24/7</Text>
+                </View>
+              </TouchableOpacity>
+              
+              {/* User info at very bottom - clickable to show dropdown */}
+              <TouchableOpacity 
+                style={styles.userInfoContainer}
+                onPress={toggleProfile}
+              >
+                <View style={styles.avatar}>
+                  <Text style={styles.avatarText}>
+                    {user?.username ? user.username.charAt(0).toUpperCase() : 'A'}
+                  </Text>
+                </View>
+                <View style={styles.userDetails}>
+                  <Text style={styles.userName}>{user?.username || 'Admin User'}</Text>
+                  <Text style={styles.userStatus}>Online</Text>
+                </View>
+                <View style={styles.expandButton}>
+                  <Text style={[styles.expandIcon, { transform: [{ rotate: showProfile ? '180deg' : '0deg' }] }]}>⌃</Text>
                 </View>
               </TouchableOpacity>
               
@@ -335,25 +359,6 @@ const DashboardScreen = ({ navigation }) => {
                   </TouchableOpacity>
                 </View>
               )}
-              
-              {/* User info at very bottom - clickable to show dropdown */}
-              <TouchableOpacity 
-                style={styles.userInfoContainer}
-                onPress={() => setShowProfile(!showProfile)}
-              >
-                <View style={styles.avatar}>
-                  <Text style={styles.avatarText}>
-                    {user?.username ? user.username.charAt(0).toUpperCase() : 'A'}
-                  </Text>
-                </View>
-                <View style={styles.userDetails}>
-                  <Text style={styles.userName}>{user?.username || 'Admin User'}</Text>
-                  <Text style={styles.userStatus}>Online</Text>
-                </View>
-                <View style={styles.expandButton}>
-                  <Text style={[styles.expandIcon, { transform: [{ rotate: showProfile ? '180deg' : '0deg' }] }]}>⌃</Text>
-                </View>
-              </TouchableOpacity>
             </View>
           </TouchableOpacity>
         </Animated.View>
@@ -371,6 +376,12 @@ const DashboardScreen = ({ navigation }) => {
       <View style={styles.modalOverlay}>
         <View style={styles.emergencyModal}>
           <LinearGradient colors={['#DC2626', '#EF4444']} style={styles.emergencyHeader}>
+            <TouchableOpacity 
+              style={styles.emergencyBackButton}
+              onPress={() => setShowEmergency(false)}
+            >
+              <Text style={styles.emergencyBackIcon}>←</Text>
+            </TouchableOpacity>
             <Text style={styles.emergencyIcon}>🚨</Text>
             <Text style={styles.emergencyTitle}>Emergency Contacts</Text>
             <TouchableOpacity 
@@ -1086,6 +1097,16 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     letterSpacing: 0.3,
   },
+  emergencyStatus: {
+    color: '#10B981',
+    fontSize: 13,
+    fontWeight: '500',
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+  },
   profileDropdown: {
     backgroundColor: '#334155',
     marginHorizontal: 24,
@@ -1187,22 +1208,21 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  // Emergency Modal Styles - Enhanced
+  // Emergency Modal Styles - Full Screen
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   emergencyModal: {
-    width: '92%',
-    maxHeight: '85%',
+    flex: 1,
     backgroundColor: '#FFFFFF',
-    borderRadius: 24,
+    marginTop: 50,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     overflow: 'hidden',
     elevation: 20,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
+    shadowOffset: { width: 0, height: -5 },
     shadowOpacity: 0.3,
     shadowRadius: 20,
   },
@@ -1211,6 +1231,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 24,
     paddingVertical: 20,
+  },
+  emergencyBackButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    marginRight: 12,
+  },
+  emergencyBackIcon: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: 'bold',
   },
   emergencyIcon: {
     fontSize: 28,
@@ -1234,98 +1265,102 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   emergencyContent: {
+    flex: 1,
     padding: 24,
   },
   emergencyInfo: {
     backgroundColor: '#FEF3C7',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 24,
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 32,
     borderLeftWidth: 4,
     borderLeftColor: '#F59E0B',
   },
   emergencyInfoTitle: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: '700',
     color: '#92400E',
-    marginBottom: 8,
+    marginBottom: 12,
   },
   emergencyInfoText: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#92400E',
-    lineHeight: 20,
+    lineHeight: 22,
   },
   emergencyContact: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     borderLeftWidth: 4,
     borderLeftColor: '#EF4444',
-    elevation: 3,
+    elevation: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowRadius: 6,
   },
   emergencyContactInfo: {
     flex: 1,
   },
   emergencyContactName: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: '700',
     color: '#111827',
-    marginBottom: 4,
+    marginBottom: 6,
   },
   urgentBadge: {
     alignSelf: 'flex-start',
     backgroundColor: '#EF4444',
     color: '#FFFFFF',
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: 'bold',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
     overflow: 'hidden',
-    marginBottom: 4,
+    marginBottom: 6,
   },
   emergencyContactDesc: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#6B7280',
+    lineHeight: 20,
   },
   emergencyContactPhoneBadge: {
     backgroundColor: '#EF4444',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 25,
+    minWidth: 80,
+    alignItems: 'center',
   },
   emergencyContactPhoneText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
   },
   additionalResources: {
-    marginTop: 24,
-    paddingTop: 24,
+    marginTop: 32,
+    paddingTop: 32,
     borderTopWidth: 1,
     borderTopColor: '#E5E7EB',
   },
   resourcesTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#111827',
-    marginBottom: 16,
+    marginBottom: 20,
     letterSpacing: 0.3,
   },
   resourceButton: {
     backgroundColor: '#3B82F6',
-    borderRadius: 12,
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    marginBottom: 12,
+    borderRadius: 16,
+    paddingVertical: 18,
+    paddingHorizontal: 24,
+    marginBottom: 16,
     elevation: 4,
     shadowColor: '#3B82F6',
     shadowOffset: { width: 0, height: 2 },
@@ -1334,23 +1369,24 @@ const styles = StyleSheet.create({
   },
   resourceButtonText: {
     color: '#FFFFFF',
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '600',
     textAlign: 'center',
     letterSpacing: 0.3,
   },
   rwandaNote: {
     backgroundColor: '#DBEAFE',
-    borderRadius: 12,
-    padding: 16,
-    marginTop: 16,
+    borderRadius: 16,
+    padding: 20,
+    marginTop: 20,
+    marginBottom: 40,
     borderLeftWidth: 4,
     borderLeftColor: '#3B82F6',
   },
   rwandaNoteText: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#1E40AF',
-    lineHeight: 20,
+    lineHeight: 22,
   },
 });
 

@@ -8,10 +8,66 @@ const LoginScreen = ({ navigation }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+
+  // Email validation
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email) {
+      return 'Email is required';
+    }
+    if (!emailRegex.test(email)) {
+      return 'Please enter a valid email address';
+    }
+    return '';
+  };
+
+  // Password validation
+  const validatePassword = (password) => {
+    if (!password) {
+      return 'Password is required';
+    }
+    if (password.length < 8) {
+      return 'Password must be at least 8 characters long';
+    }
+    if (!/(?=.*[a-z])/.test(password)) {
+      return 'Password must contain at least one lowercase letter';
+    }
+    if (!/(?=.*[A-Z])/.test(password)) {
+      return 'Password must contain at least one uppercase letter';
+    }
+    if (!/(?=.*\d)/.test(password)) {
+      return 'Password must contain at least one number';
+    }
+    if (!/(?=.*[@$!%*?&])/.test(password)) {
+      return 'Password must contain at least one special character (@$!%*?&)';
+    }
+    return '';
+  };
+
+  const handleEmailChange = (text) => {
+    setEmail(text);
+    if (emailError) {
+      setEmailError(validateEmail(text));
+    }
+  };
+
+  const handlePasswordChange = (text) => {
+    setPassword(text);
+    if (passwordError) {
+      setPasswordError(validatePassword(text));
+    }
+  };
 
   const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
+    const emailErr = validateEmail(email);
+    const passwordErr = validatePassword(password);
+    
+    setEmailError(emailErr);
+    setPasswordError(passwordErr);
+    
+    if (emailErr || passwordErr) {
       return;
     }
     
@@ -37,6 +93,14 @@ const LoginScreen = ({ navigation }) => {
         
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <View style={styles.content}>
+            {/* Back Button */}
+            <TouchableOpacity 
+              style={styles.backButton}
+              onPress={() => navigation.navigate('Landing')}
+            >
+              <Text style={styles.backButtonText}>← Back</Text>
+            </TouchableOpacity>
+
             {/* Logo Section */}
             <View style={styles.logoSection}>
               <View style={styles.logoContainer}>
@@ -56,29 +120,30 @@ const LoginScreen = ({ navigation }) => {
               {/* Email Field */}
               <View style={styles.inputContainer}>
                 <Text style={styles.label}>Email</Text>
-                <View style={styles.inputWrapper}>
+                <View style={[styles.inputWrapper, emailError && styles.inputError]}>
                   <Text style={styles.inputIcon}>✉️</Text>
                   <TextInput
                     style={styles.input}
                     value={email}
-                    onChangeText={setEmail}
+                    onChangeText={handleEmailChange}
                     placeholder="Enter your email"
                     placeholderTextColor="#9CA3AF"
                     keyboardType="email-address"
                     autoCapitalize="none"
                   />
                 </View>
+                {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
               </View>
 
               {/* Password Field */}
               <View style={styles.inputContainer}>
                 <Text style={styles.label}>Password</Text>
-                <View style={styles.inputWrapper}>
+                <View style={[styles.inputWrapper, passwordError && styles.inputError]}>
                   <Text style={styles.inputIcon}>🔒</Text>
                   <TextInput
                     style={styles.input}
                     value={password}
-                    onChangeText={setPassword}
+                    onChangeText={handlePasswordChange}
                     placeholder="Enter your password"
                     placeholderTextColor="#9CA3AF"
                     secureTextEntry={!showPassword}
@@ -90,6 +155,29 @@ const LoginScreen = ({ navigation }) => {
                     <Text>{showPassword ? '👁️' : '👁️‍🗨️'}</Text>
                   </TouchableOpacity>
                 </View>
+                {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
+                
+                {/* Password Requirements */}
+                {password && !passwordError && (
+                  <View style={styles.passwordRequirements}>
+                    <Text style={styles.requirementsTitle}>Password Requirements:</Text>
+                    <Text style={[styles.requirement, password.length >= 8 && styles.requirementMet]}>
+                      ✓ At least 8 characters
+                    </Text>
+                    <Text style={[styles.requirement, /(?=.*[a-z])/.test(password) && styles.requirementMet]}>
+                      ✓ One lowercase letter
+                    </Text>
+                    <Text style={[styles.requirement, /(?=.*[A-Z])/.test(password) && styles.requirementMet]}>
+                      ✓ One uppercase letter
+                    </Text>
+                    <Text style={[styles.requirement, /(?=.*\d)/.test(password) && styles.requirementMet]}>
+                      ✓ One number
+                    </Text>
+                    <Text style={[styles.requirement, /(?=.*[@$!%*?&])/.test(password) && styles.requirementMet]}>
+                      ✓ One special character (@$!%*?&)
+                    </Text>
+                  </View>
+                )}
               </View>
 
               {/* Remember Me & Forgot Password */}
@@ -182,10 +270,21 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     justifyContent: 'center',
+    paddingBottom: 40,
   },
   content: {
     paddingHorizontal: 24,
     paddingVertical: 40,
+  },
+  backButton: {
+    alignSelf: 'flex-start',
+    marginBottom: 20,
+    padding: 8,
+  },
+  backButtonText: {
+    fontSize: 16,
+    color: '#3B82F6',
+    fontWeight: '600',
   },
   logoSection: {
     alignItems: 'center',
@@ -243,6 +342,39 @@ const styles = StyleSheet.create({
     borderColor: '#D1D5DB',
     paddingHorizontal: 16,
     paddingVertical: 12,
+  },
+  inputError: {
+    borderColor: '#EF4444',
+    borderWidth: 2,
+  },
+  errorText: {
+    fontSize: 12,
+    color: '#EF4444',
+    marginTop: 4,
+    marginLeft: 4,
+  },
+  passwordRequirements: {
+    marginTop: 8,
+    padding: 12,
+    backgroundColor: 'rgba(59, 130, 246, 0.05)',
+    borderRadius: 8,
+    borderLeftWidth: 3,
+    borderLeftColor: '#3B82F6',
+  },
+  requirementsTitle: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 4,
+  },
+  requirement: {
+    fontSize: 11,
+    color: '#6B7280',
+    marginBottom: 2,
+  },
+  requirementMet: {
+    color: '#10B981',
+    fontWeight: '500',
   },
   inputIcon: {
     fontSize: 16,
