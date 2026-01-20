@@ -18,7 +18,6 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import { AuthContext } from '../context/AuthContext';
-import QuickActionModal from '../components/QuickActionModal';
 
 const { width, height } = Dimensions.get('window');
 
@@ -26,7 +25,6 @@ const DashboardScreen = ({ navigation }) => {
   const { user, logoutUser } = useContext(AuthContext);
   const [showSidebar, setShowSidebar] = useState(false);
   const [showEmergency, setShowEmergency] = useState(false);
-  const [showQuickAction, setShowQuickAction] = useState(null);
   const [showProfile, setShowProfile] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [messages, setMessages] = useState([]);
@@ -186,7 +184,7 @@ const DashboardScreen = ({ navigation }) => {
   };
 
   const handleQuickAction = (action) => {
-    setShowQuickAction(action);
+    navigation.navigate('QuickAction', { actionType: action });
   };
 
   const handleNewConversation = () => {
@@ -585,18 +583,6 @@ const DashboardScreen = ({ navigation }) => {
           {/* Modals */}
           {renderSidebar()}
           {renderEmergencyModal()}
-          
-          {/* Quick Action Modal */}
-          <QuickActionModal
-            visible={showQuickAction !== null}
-            actionType={showQuickAction}
-            onClose={() => setShowQuickAction(null)}
-            onSubmit={(data) => {
-              // Handle quick action submission
-              console.log('Quick action data:', data);
-              setShowQuickAction(null);
-            }}
-          />
         </LinearGradient>
       </SafeAreaView>
     </SafeAreaProvider>

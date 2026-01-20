@@ -449,7 +449,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   cancelButtonText: {
-    fontSize: 15,
+    fontSize: 10,
     fontWeight: '600',
     color: '#374151',
   },
@@ -471,7 +471,7 @@ const styles = StyleSheet.create({
     minHeight: 60,
   },
   submitButtonText: {
-    fontSize: 15,
+    fontSize: 10,
     fontWeight: '600',
     color: '#FFFFFF',
     letterSpacing: 0.3,
