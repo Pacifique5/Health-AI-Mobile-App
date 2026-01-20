@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
 import { AuthContext } from '../context/AuthContext';
 import QuickActionModal from '../components/QuickActionModal';
 
@@ -373,15 +374,9 @@ const DashboardScreen = ({ navigation }) => {
       animationType="slide"
       onRequestClose={() => setShowEmergency(false)}
     >
-      <View style={styles.modalOverlay}>
+      <BlurView intensity={20} style={styles.modalOverlay}>
         <View style={styles.emergencyModal}>
           <LinearGradient colors={['#DC2626', '#EF4444']} style={styles.emergencyHeader}>
-            <TouchableOpacity 
-              style={styles.emergencyBackButton}
-              onPress={() => setShowEmergency(false)}
-            >
-              <Text style={styles.emergencyBackIcon}>←</Text>
-            </TouchableOpacity>
             <Text style={styles.emergencyIcon}>🚨</Text>
             <Text style={styles.emergencyTitle}>Emergency Contacts</Text>
             <TouchableOpacity 
@@ -434,7 +429,7 @@ const DashboardScreen = ({ navigation }) => {
             </View>
           </ScrollView>
         </View>
-      </View>
+      </BlurView>
     </Modal>
   );
 
@@ -963,7 +958,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.6)',
   },
   sidebar: {
-    width: width * 0.85,
+    width: width * 0.90,
     height: '100%',
     backgroundColor: '#1E293B',
     elevation: 20,
@@ -1057,9 +1052,9 @@ const styles = StyleSheet.create({
   emergencyContactsButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
     paddingVertical: 20,
-    marginHorizontal: 24,
+    marginHorizontal: 16,
     marginBottom: 16,
     backgroundColor: '#334155',
     borderRadius: 16,
@@ -1068,11 +1063,12 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
+    minHeight: 80,
   },
   emergencyAvatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
     backgroundColor: '#EF4444',
     justifyContent: 'center',
     alignItems: 'center',
@@ -1084,7 +1080,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   emergencyAvatarText: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
   },
   emergencyDetails: {
@@ -1092,52 +1088,55 @@ const styles = StyleSheet.create({
   },
   emergencyName: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '600',
-    marginBottom: 4,
+    marginBottom: 6,
     letterSpacing: 0.3,
   },
   emergencyStatus: {
     color: '#10B981',
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '500',
     backgroundColor: 'rgba(16, 185, 129, 0.1)',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
     borderRadius: 8,
     alignSelf: 'flex-start',
   },
   profileDropdown: {
     backgroundColor: '#334155',
-    marginHorizontal: 24,
+    marginHorizontal: 16,
     marginBottom: 16,
-    borderRadius: 12,
+    borderRadius: 16,
     overflow: 'hidden',
     elevation: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
+    maxHeight: 300,
   },
   dropdownItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingHorizontal: 24,
+    paddingVertical: 18,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(71, 85, 105, 0.5)',
+    minHeight: 60,
   },
   dropdownIcon: {
-    fontSize: 18,
-    marginRight: 16,
-    width: 24,
+    fontSize: 20,
+    marginRight: 20,
+    width: 28,
     textAlign: 'center',
   },
   dropdownText: {
     color: '#FFFFFF',
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '500',
     letterSpacing: 0.3,
+    flex: 1,
   },
   dropdownDivider: {
     height: 1,
@@ -1147,9 +1146,9 @@ const styles = StyleSheet.create({
   userInfoContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
     paddingVertical: 20,
-    marginHorizontal: 24,
+    marginHorizontal: 16,
     marginBottom: 24,
     backgroundColor: '#334155',
     borderRadius: 16,
@@ -1158,11 +1157,12 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
+    minHeight: 80,
   },
   avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
     backgroundColor: '#3B82F6',
     justifyContent: 'center',
     alignItems: 'center',
@@ -1175,7 +1175,7 @@ const styles = StyleSheet.create({
   },
   avatarText: {
     color: '#FFFFFF',
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
   },
   userDetails: {
@@ -1183,42 +1183,42 @@ const styles = StyleSheet.create({
   },
   userName: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '600',
-    marginBottom: 4,
+    marginBottom: 6,
     letterSpacing: 0.3,
   },
   userStatus: {
     color: '#10B981',
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '500',
     backgroundColor: 'rgba(16, 185, 129, 0.1)',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
     borderRadius: 8,
     alignSelf: 'flex-start',
   },
   expandButton: {
-    padding: 8,
-    borderRadius: 20,
+    padding: 12,
+    borderRadius: 25,
     backgroundColor: 'rgba(148, 163, 184, 0.1)',
   },
   expandIcon: {
     color: '#94A3B8',
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
   },
   // Emergency Modal Styles - Full Screen
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
   },
   emergencyModal: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-    marginTop: 50,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    marginTop: 30,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
     overflow: 'hidden',
     elevation: 20,
     shadowColor: '#000',
@@ -1229,164 +1229,163 @@ const styles = StyleSheet.create({
   emergencyHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 20,
-  },
-  emergencyBackButton: {
-    padding: 8,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    marginRight: 12,
-  },
-  emergencyBackIcon: {
-    color: '#FFFFFF',
-    fontSize: 20,
-    fontWeight: 'bold',
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+    paddingTop: 10,
   },
   emergencyIcon: {
-    fontSize: 28,
+    fontSize: 32,
     marginRight: 16,
   },
   emergencyTitle: {
     flex: 1,
     color: '#FFFFFF',
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: 'bold',
     letterSpacing: 0.5,
   },
   modalCloseButton: {
-    padding: 8,
-    borderRadius: 20,
+    padding: 12,
+    borderRadius: 25,
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
   },
   modalCloseText: {
     color: '#FFFFFF',
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
   },
   emergencyContent: {
     flex: 1,
-    padding: 24,
+    paddingHorizontal: 24,
+    paddingTop: 20,
   },
   emergencyInfo: {
     backgroundColor: '#FEF3C7',
-    borderRadius: 16,
-    padding: 20,
+    borderRadius: 20,
+    padding: 24,
     marginBottom: 32,
-    borderLeftWidth: 4,
+    borderLeftWidth: 6,
     borderLeftColor: '#F59E0B',
   },
   emergencyInfoTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '700',
     color: '#92400E',
     marginBottom: 12,
   },
   emergencyInfoText: {
-    fontSize: 15,
+    fontSize: 16,
     color: '#92400E',
-    lineHeight: 22,
+    lineHeight: 24,
   },
   emergencyContact: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
+    borderRadius: 20,
+    padding: 24,
+    marginBottom: 20,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    borderLeftWidth: 4,
+    borderLeftWidth: 6,
     borderLeftColor: '#EF4444',
-    elevation: 4,
+    elevation: 6,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    minHeight: 100,
   },
   emergencyContactInfo: {
     flex: 1,
   },
   emergencyContactName: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '700',
     color: '#111827',
-    marginBottom: 6,
+    marginBottom: 8,
   },
   urgentBadge: {
     alignSelf: 'flex-start',
     backgroundColor: '#EF4444',
     color: '#FFFFFF',
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: 'bold',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
     overflow: 'hidden',
-    marginBottom: 6,
+    marginBottom: 8,
   },
   emergencyContactDesc: {
-    fontSize: 15,
+    fontSize: 16,
     color: '#6B7280',
-    lineHeight: 20,
+    lineHeight: 22,
   },
   emergencyContactPhoneBadge: {
     backgroundColor: '#EF4444',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 25,
-    minWidth: 80,
-    alignItems: 'center',
-  },
-  emergencyContactPhoneText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  additionalResources: {
-    marginTop: 32,
-    paddingTop: 32,
-    borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
-  },
-  resourcesTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#111827',
-    marginBottom: 20,
-    letterSpacing: 0.3,
-  },
-  resourceButton: {
-    backgroundColor: '#3B82F6',
-    borderRadius: 16,
-    paddingVertical: 18,
+    paddingVertical: 16,
     paddingHorizontal: 24,
-    marginBottom: 16,
+    borderRadius: 30,
+    minWidth: 100,
+    alignItems: 'center',
     elevation: 4,
-    shadowColor: '#3B82F6',
+    shadowColor: '#EF4444',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
   },
+  emergencyContactPhoneText: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  additionalResources: {
+    marginTop: 40,
+    paddingTop: 32,
+    borderTopWidth: 2,
+    borderTopColor: '#E5E7EB',
+  },
+  resourcesTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#111827',
+    marginBottom: 24,
+    letterSpacing: 0.3,
+  },
+  resourceButton: {
+    backgroundColor: '#3B82F6',
+    borderRadius: 20,
+    paddingVertical: 20,
+    paddingHorizontal: 28,
+    marginBottom: 20,
+    elevation: 6,
+    shadowColor: '#3B82F6',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    minHeight: 64,
+    justifyContent: 'center',
+  },
   resourceButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '600',
     textAlign: 'center',
     letterSpacing: 0.3,
   },
   rwandaNote: {
     backgroundColor: '#DBEAFE',
-    borderRadius: 16,
-    padding: 20,
-    marginTop: 20,
-    marginBottom: 40,
-    borderLeftWidth: 4,
+    borderRadius: 20,
+    padding: 24,
+    marginTop: 24,
+    marginBottom: 60,
+    borderLeftWidth: 6,
     borderLeftColor: '#3B82F6',
   },
   rwandaNoteText: {
-    fontSize: 15,
+    fontSize: 16,
     color: '#1E40AF',
-    lineHeight: 22,
+    lineHeight: 24,
   },
 });
 

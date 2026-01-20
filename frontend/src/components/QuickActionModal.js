@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
 import { Picker } from '@react-native-picker/picker';
 
 const QuickActionModal = ({ visible, onClose, actionType, onSubmit }) => {
@@ -29,7 +30,7 @@ const QuickActionModal = ({ visible, onClose, actionType, onSubmit }) => {
           title: 'Heart Health Check',
           icon: '❤️',
           color: ['#EF4444', '#EC4899'],
-          buttonText: 'Get Heart Health Insights',
+          buttonText: 'Get Heart Health',
           fields: [
             { key: 'concerns', label: 'Heart health concerns', type: 'textarea', required: true },
             { key: 'age', label: 'Age', type: 'input' },
@@ -46,7 +47,7 @@ const QuickActionModal = ({ visible, onClose, actionType, onSubmit }) => {
           title: 'Preventive Care',
           icon: '🛡️',
           color: ['#10B981', '#059669'],
-          buttonText: 'Get Recommendations',
+          buttonText: 'Recommendation',
           fields: [
             { key: 'careType', label: 'Type of preventive care', type: 'picker', required: true, options: ['General wellness', 'Vaccination', 'Screening', 'Lifestyle advice'] },
             { key: 'ageGroup', label: 'Age group', type: 'picker', options: ['18-30', '31-50', '51-65', '65+'] },
@@ -224,7 +225,7 @@ const QuickActionModal = ({ visible, onClose, actionType, onSubmit }) => {
       animationType="slide"
       onRequestClose={onClose}
     >
-      <View style={styles.overlay}>
+      <BlurView intensity={20} style={styles.overlay}>
         <View style={styles.modal}>
           <LinearGradient colors={config.color} style={styles.header}>
             <Text style={styles.headerIcon}>{config.icon}</Text>
@@ -253,7 +254,7 @@ const QuickActionModal = ({ visible, onClose, actionType, onSubmit }) => {
             </TouchableOpacity>
           </View>
         </View>
-      </View>
+      </BlurView>
     </Modal>
   );
 };
@@ -261,15 +262,14 @@ const QuickActionModal = ({ visible, onClose, actionType, onSubmit }) => {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modal: {
-    width: '100%',
-    height: '85%',
+    flex: 1,
     backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    marginTop: 40,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
     overflow: 'hidden',
     elevation: 20,
     shadowColor: '#000',
@@ -282,90 +282,94 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 24,
     paddingVertical: 20,
+    paddingTop: 30,
   },
   headerIcon: {
-    fontSize: 28,
+    fontSize: 32,
     marginRight: 16,
   },
   headerTitle: {
     flex: 1,
     color: '#FFFFFF',
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: 'bold',
     letterSpacing: 0.5,
   },
   closeButton: {
-    padding: 8,
-    borderRadius: 20,
+    padding: 12,
+    borderRadius: 25,
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
   },
   closeButtonText: {
     color: '#FFFFFF',
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
   },
   content: {
     flex: 1,
-    padding: 24,
+    paddingHorizontal: 24,
+    paddingTop: 20,
   },
   fieldLabel: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '600',
-    color: '#374151',
-    marginBottom: 8,
+    color: '#1F2937',
+    marginBottom: 12,
     letterSpacing: 0.3,
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#D1D5DB',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    borderWidth: 2,
+    borderColor: '#E5E7EB',
+    borderRadius: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
     fontSize: 16,
     color: '#111827',
-    marginBottom: 20,
-    backgroundColor: '#FAFAFA',
-    minHeight: 50,
+    marginBottom: 24,
+    backgroundColor: '#F9FAFB',
+    minHeight: 56,
   },
   textarea: {
-    height: 120,
+    height: 140,
     textAlignVertical: 'top',
-    paddingTop: 14,
+    paddingTop: 16,
   },
   pickerContainer: {
-    marginBottom: 20,
+    marginBottom: 24,
   },
   picker: {
-    borderWidth: 1,
-    borderColor: '#D1D5DB',
-    borderRadius: 12,
-    backgroundColor: '#FAFAFA',
+    borderWidth: 2,
+    borderColor: '#E5E7EB',
+    borderRadius: 16,
+    backgroundColor: '#F9FAFB',
+    minHeight: 56,
   },
   buttonGroup: {
-    marginBottom: 20,
+    marginBottom: 24,
   },
   buttonRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    gap: 8,
+    gap: 12,
   },
   optionButton: {
     flex: 1,
-    paddingVertical: 14,
-    paddingHorizontal: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
     borderWidth: 2,
-    borderColor: '#D1D5DB',
-    borderRadius: 12,
+    borderColor: '#E5E7EB',
+    borderRadius: 16,
     alignItems: 'center',
-    backgroundColor: '#FAFAFA',
-    minHeight: 48,
+    backgroundColor: '#F9FAFB',
+    minHeight: 56,
+    justifyContent: 'center',
   },
   selectedButton: {
     backgroundColor: '#3B82F6',
     borderColor: '#3B82F6',
   },
   optionButtonText: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '600',
     color: '#374151',
   },
@@ -373,23 +377,25 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   checkboxGroup: {
-    marginBottom: 20,
+    marginBottom: 24,
   },
   checkboxItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    backgroundColor: '#FAFAFA',
-    borderRadius: 8,
-    marginBottom: 8,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 16,
+    marginBottom: 12,
+    borderWidth: 2,
+    borderColor: '#E5E7EB',
   },
   checkbox: {
-    width: 24,
-    height: 24,
+    width: 28,
+    height: 28,
     borderWidth: 2,
     borderColor: '#D1D5DB',
-    borderRadius: 6,
+    borderRadius: 8,
     marginRight: 16,
     alignItems: 'center',
     justifyContent: 'center',
@@ -401,69 +407,71 @@ const styles = StyleSheet.create({
   },
   checkmark: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: 'bold',
   },
   checkboxLabel: {
-    fontSize: 15,
+    fontSize: 16,
     color: '#374151',
     flex: 1,
-    lineHeight: 20,
+    lineHeight: 22,
   },
   infoBox: {
-    borderRadius: 12,
-    borderWidth: 1,
-    padding: 16,
-    marginTop: 20,
+    borderRadius: 16,
+    borderWidth: 2,
+    padding: 20,
+    marginTop: 24,
+    marginBottom: 20,
   },
   infoBoxText: {
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: 15,
+    lineHeight: 22,
     color: '#374151',
   },
   footer: {
     flexDirection: 'row',
-    padding: 24,
-    gap: 16,
+    padding: 5,
+    paddingBottom: 5,
+    gap: 20,
     borderTopWidth: 1,
     borderTopColor: '#E5E7EB',
-    backgroundColor: '#FAFAFA',
+    backgroundColor: '#F9FAFB',
   },
   cancelButton: {
     flex: 1,
-    paddingVertical: 16,
+    paddingVertical: 10,
     borderWidth: 2,
-    borderColor: '#D1D5DB',
-    borderRadius: 12,
+    borderColor: '#E5E7EB',
+    borderRadius: 200,
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    minHeight: 52,
+    minHeight: 5,
     justifyContent: 'center',
   },
   cancelButtonText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
     color: '#374151',
   },
   submitButton: {
     flex: 1,
-    borderRadius: 12,
+    borderRadius: 200,
     overflow: 'hidden',
     elevation: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
-    minHeight: 52,
+    minHeight: 60,
   },
   submitGradient: {
-    paddingVertical: 16,
+    paddingVertical: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 52,
+    minHeight: 60,
   },
   submitButtonText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
     color: '#FFFFFF',
     letterSpacing: 0.3,
