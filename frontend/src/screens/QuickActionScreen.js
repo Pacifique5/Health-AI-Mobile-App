@@ -442,6 +442,8 @@ const styles = StyleSheet.create({
   submitButton: {
     flex: 1,
     borderRadius: 12,
+    borderColor: '#E5E7EB',
+    borderWidth: 2,
     overflow: 'hidden',
   },
   submitGradient: {
