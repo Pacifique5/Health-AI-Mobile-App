@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
   },
   additionalResources: {
     marginTop: 40,
-    paddingTop: 32,
+    paddingTop: 20,
     borderTopWidth: 2,
     borderTopColor: '#E5E7EB',
   },
@@ -239,8 +239,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#3B82F6',
     borderRadius: 20,
     paddingVertical: 20,
-    paddingHorizontal: 28,
-    marginBottom: 20,
+    paddingHorizontal: 20,
+    marginBottom: 10,
     elevation: 6,
     shadowColor: '#3B82F6',
     shadowOffset: { width: 0, height: 3 },
@@ -250,8 +250,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   resourceButtonText: {
-    color: '#FFFFFF',
-    fontSize: 17,
+    color: '#4c4c4cff',
+    fontSize: 15,
     fontWeight: '600',
     textAlign: 'center',
     letterSpacing: 0.3,
@@ -267,7 +267,7 @@ const styles = StyleSheet.create({
   },
   rwandaNoteText: {
     fontSize: 16,
-    color: '#1E40AF',
+    color: '#212223ff',
     lineHeight: 24,
   },
 });
