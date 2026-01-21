@@ -1,9 +1,116 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Linking } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 
 const EmergencyContactsScreen = ({ navigation }) => {
+  const [userLocation, setUserLocation] = useState(null);
+
+  useEffect(() => {
+    getCurrentLocation();
+  }, []);
+
+  const getCurrentLocation = async () => {
+    try {
+      // Try to use expo-location if available
+      try {
+        const Location = require('expo-location');
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          Alert.alert(
+            'Location Permission',
+            'Please enable location services to find nearby hospitals.',
+            [{ text: 'OK' }]
+          );
+          return;
+        }
+
+        const location = await Location.getCurrentPositionAsync({});
+        setUserLocation({
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+        });
+      } catch (expoError) {
+        // Fallback: Use browser geolocation if expo-location is not available
+        if (navigator && navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              setUserLocation({
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude,
+              });
+            },
+            (error) => {
+              console.error('Geolocation error:', error);
+              Alert.alert('Location Error', 'Unable to get your current location.');
+            }
+          );
+        } else {
+          console.log('Location services not available');
+        }
+      }
+    } catch (error) {
+      console.error('Error getting location:', error);
+      Alert.alert('Error', 'Unable to get your current location.');
+    }
+  };
+
+  const handleFindNearestHospital = async () => {
+    if (!userLocation) {
+      Alert.alert(
+        'Finding Hospitals',
+        'We\'ll help you find nearby hospitals. This will open Google Maps.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { 
+            text: 'Open Maps', 
+            onPress: () => openMapsWithoutLocation()
+          }
+        ]
+      );
+      return;
+    }
+
+    // Create Google Maps URL with hospital search
+    const { latitude, longitude } = userLocation;
+    const googleMapsUrl = `https://www.google.com/maps/search/hospitals+near+me/@${latitude},${longitude},15z`;
+    
+    // Alternative: Use Google Maps app if available
+    const googleMapsAppUrl = `comgooglemaps://?q=hospitals&center=${latitude},${longitude}&zoom=15`;
+    
+    try {
+      // Try to open Google Maps app first
+      const canOpenApp = await Linking.canOpenURL(googleMapsAppUrl);
+      if (canOpenApp) {
+        await Linking.openURL(googleMapsAppUrl);
+      } else {
+        // Fallback to web version
+        await Linking.openURL(googleMapsUrl);
+      }
+    } catch (error) {
+      console.error('Error opening maps:', error);
+      Alert.alert('Error', 'Unable to open maps. Please try again.');
+    }
+  };
+
+  const openMapsWithoutLocation = async () => {
+    // Open Google Maps with general hospital search
+    const googleMapsUrl = 'https://www.google.com/maps/search/hospitals+near+me';
+    const googleMapsAppUrl = 'comgooglemaps://?q=hospitals';
+    
+    try {
+      const canOpenApp = await Linking.canOpenURL(googleMapsAppUrl);
+      if (canOpenApp) {
+        await Linking.openURL(googleMapsAppUrl);
+      } else {
+        await Linking.openURL(googleMapsUrl);
+      }
+    } catch (error) {
+      console.error('Error opening maps:', error);
+      Alert.alert('Error', 'Unable to open maps. Please try again.');
+    }
+  };
+
   const emergencyContacts = [
     { 
       name: 'Emergencies', 
@@ -79,11 +186,20 @@ const EmergencyContactsScreen = ({ navigation }) => {
             
             <View style={styles.additionalResources}>
               <Text style={styles.resourcesTitle}>Additional Resources</Text>
-              <TouchableOpacity style={styles.resourceButton}>
-                <Text style={styles.resourceButtonText}>🏥 Find Nearest Hospital</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.resourceButton}>
-                <Text style={styles.resourceButtonText}>🚑 Urgent Care Locator</Text>
+              <TouchableOpacity 
+                style={[
+                  styles.resourceButton,
+                  userLocation && styles.resourceButtonWithLocation
+                ]}
+                onPress={handleFindNearestHospital}
+              >
+                <Text style={styles.resourceButtonText}>
+                  🏥 Find Nearest Hospital
+                  {userLocation && ' 📍'}
+                </Text>
+                {userLocation && (
+                  <Text style={styles.locationStatus}>Location detected</Text>
+                )}
               </TouchableOpacity>
             </View>
             
@@ -190,7 +306,7 @@ const styles = StyleSheet.create({
   urgentBadge: {
     alignSelf: 'flex-start',
     backgroundColor: '#EF4444',
-    color: '#FFFFFF',
+    color: '#343030ff',
     fontSize: 12,
     fontWeight: 'bold',
     paddingHorizontal: 12,
@@ -218,7 +334,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   emergencyContactPhoneText: {
-    color: '#FFFFFF',
+    color: '#343030ff',
     fontSize: 20,
     fontWeight: 'bold',
   },
@@ -249,12 +365,23 @@ const styles = StyleSheet.create({
     minHeight: 64,
     justifyContent: 'center',
   },
+  resourceButtonWithLocation: {
+    backgroundColor: '#10B981',
+    shadowColor: '#10B981',
+  },
   resourceButtonText: {
-    color: '#4c4c4cff',
-    fontSize: 15,
+    color: '#343030ff',
+    fontSize: 17,
     fontWeight: '600',
     textAlign: 'center',
     letterSpacing: 0.3,
+  },
+  locationStatus: {
+    color: '#343030ff',
+    fontSize: 12,
+    textAlign: 'center',
+    marginTop: 4,
+    fontStyle: 'italic',
   },
   rwandaNote: {
     backgroundColor: '#DBEAFE',
