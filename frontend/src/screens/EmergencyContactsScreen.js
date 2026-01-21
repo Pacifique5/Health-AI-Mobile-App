@@ -147,7 +147,7 @@ const EmergencyContactsScreen = ({ navigation }) => {
       <SafeAreaView style={styles.container} edges={['top']}>
         <LinearGradient colors={['#F8FAFC', '#E0F2FE', '#E0E7FF']} style={styles.background}>
           {/* Header */}
-          <LinearGradient colors={['#DC2626', '#EF4444']} style={styles.header}>
+          <LinearGradient colors={['#DC2626', '#fb9696ff']} style={styles.header}>
             <Text style={styles.headerIcon}>🚨</Text>
             <Text style={styles.headerTitle}>Emergency Contacts</Text>
             <TouchableOpacity 
@@ -305,7 +305,7 @@ const styles = StyleSheet.create({
   },
   urgentBadge: {
     alignSelf: 'flex-start',
-    backgroundColor: '#EF4444',
+    backgroundColor: '#fb9696ff',
     color: '#343030ff',
     fontSize: 12,
     fontWeight: 'bold',
@@ -321,14 +321,14 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   emergencyContactPhoneBadge: {
-    backgroundColor: '#EF4444',
+    backgroundColor: '#fb9696ff',
     paddingVertical: 16,
     paddingHorizontal: 24,
     borderRadius: 30,
     minWidth: 100,
     alignItems: 'center',
     elevation: 4,
-    shadowColor: '#EF4444',
+    shadowColor: '#fb9696ff',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
