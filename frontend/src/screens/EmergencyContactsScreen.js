@@ -6,31 +6,31 @@ import { LinearGradient } from 'expo-linear-gradient';
 const EmergencyContactsScreen = ({ navigation }) => {
   const emergencyContacts = [
     { 
-      name: 'Emergency Services', 
+      name: 'Emergencies', 
       phone: '911', 
-      description: 'Life-threatening emergencies', 
+      description: 'Health emergencies', 
       urgent: true,
       icon: '🚨'
     },
     { 
-      name: 'Rwanda Emergency', 
+      name: 'Threats', 
       phone: '912', 
-      description: 'National emergency line', 
+      description: 'National threats line', 
       urgent: true,
       icon: '🇷🇼'
     },
     { 
       name: 'Poison Control', 
-      phone: '1-800-222-1222', 
-      description: 'Poisoning emergencies', 
-      urgent: false,
+      phone: '988', 
+      description: 'Poison emergencies', 
+      urgent: true,
       icon: '☠️'
     },
     { 
-      name: 'Mental Health Crisis', 
+      name: 'Mental Health', 
       phone: '988', 
       description: '24/7 crisis support', 
-      urgent: false,
+      urgent: true,
       icon: '🧠'
     },
   ];
@@ -60,6 +60,7 @@ const EmergencyContactsScreen = ({ navigation }) => {
                 loss of consciousness, severe allergic reactions, or any life-threatening emergency.
               </Text>
             </View>
+            
             
             {emergencyContacts.map((contact, index) => (
               <TouchableOpacity key={index} style={styles.emergencyContact}>
@@ -109,9 +110,11 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 20,
-    paddingTop: 12,
+    paddingHorizontal: 30,
+    paddingVertical: 10,
+    paddingTop: 15,
+    paddingBottom:15,
+    borderRadius: 10,
   },
   headerIcon: {
     fontSize: 28,
@@ -141,33 +144,33 @@ const styles = StyleSheet.create({
   },
   emergencyInfo: {
     backgroundColor: '#FEF3C7',
-    borderRadius: 20,
-    padding: 24,
-    marginBottom: 32,
-    borderLeftWidth: 6,
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 30,
+    borderLeftWidth: 9,
     borderLeftColor: '#F59E0B',
   },
   emergencyInfoTitle: {
-    fontSize: 20,
+    fontSize: 15,
     fontWeight: '700',
     color: '#92400E',
     marginBottom: 12,
   },
   emergencyInfoText: {
-    fontSize: 16,
-    color: '#92400E',
+    fontSize: 15,
+    color: '#000000ff',
     lineHeight: 24,
   },
   emergencyContact: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 24,
+    borderRadius: 10,
+    padding: 20,
     marginBottom: 20,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     borderLeftWidth: 6,
-    borderLeftColor: '#EF4444',
+    borderLeftColor: '#fb9696ff',
     elevation: 6,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 3 },
@@ -179,7 +182,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   emergencyContactName: {
-    fontSize: 20,
+    fontSize: 15,
     fontWeight: '700',
     color: '#111827',
     marginBottom: 8,

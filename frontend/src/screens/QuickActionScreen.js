@@ -279,9 +279,11 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 20,
-    paddingTop: 12,
+    paddingHorizontal: 50,
+    paddingVertical: 10,
+    paddingTop: 20,
+    paddingBottom:20,
+    borderRadius: 10,
   },
   headerIcon: {
     fontSize: 28,
