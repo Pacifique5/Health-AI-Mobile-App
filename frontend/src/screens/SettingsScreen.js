@@ -10,22 +10,28 @@ import {
   Image,
   Modal,
   KeyboardAvoidingView,
-  Platform
+  Platform,
+  Switch
 } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
 import { AuthContext } from '../context/AuthContext';
+import { ThemeContext } from '../context/ThemeContext';
+import { NotificationContext } from '../context/NotificationContext';
 import { updateProfile, changePassword, uploadProfilePicture } from '../config/api';
 import GradientButton from '../components/GradientButton';
 import Input from '../components/Input';
 
 const SettingsScreen = ({ navigation }) => {
   const { user, updateUser, logoutUser } = useContext(AuthContext);
+  const { theme, colors, toggleTheme, isDark } = useContext(ThemeContext);
+  const { notifications, updateNotificationSetting } = useContext(NotificationContext);
   const [loading, setLoading] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [showUsernameModal, setShowUsernameModal] = useState(false);
+  const [showNotificationsModal, setShowNotificationsModal] = useState(false);
   
   // Password change form
   const [currentPassword, setCurrentPassword] = useState('');
@@ -154,21 +160,15 @@ const SettingsScreen = ({ navigation }) => {
     }
   };
 
-  const handleLogout = () => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Logout', 
-          style: 'destructive',
-          onPress: async () => {
-            await logoutUser();
-          }
-        },
-      ]
-    );
+  const getNotificationDescription = (key) => {
+    const descriptions = {
+      healthReminders: 'Get reminders about your health and wellness',
+      conversationUpdates: 'Notifications about your chat conversations',
+      systemNotifications: 'Important app updates and announcements',
+      medicationReminders: 'Reminders to take your medications',
+      appointmentReminders: 'Upcoming medical appointment alerts',
+    };
+    return descriptions[key] || '';
   };
 
   const renderPasswordModal = () => (
@@ -183,8 +183,8 @@ const SettingsScreen = ({ navigation }) => {
         style={styles.modalOverlay}
       >
         <View style={styles.modalContainer}>
-          <LinearGradient colors={['#111827', '#1F2937']} style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Change Password</Text>
+          <LinearGradient colors={theme === 'dark' ? ['#111827', '#1F2937'] : ['#FFFFFF', '#F8FAFC']} style={styles.modalContent}>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>Change Password</Text>
             
             <Input
               label="Current Password"
@@ -212,10 +212,10 @@ const SettingsScreen = ({ navigation }) => {
             
             <View style={styles.modalButtons}>
               <TouchableOpacity 
-                style={styles.cancelButton}
+                style={[styles.cancelButton, { backgroundColor: colors.border }]}
                 onPress={() => setShowPasswordModal(false)}
               >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
+                <Text style={[styles.cancelButtonText, { color: colors.text }]}>Cancel</Text>
               </TouchableOpacity>
               
               <GradientButton
@@ -243,8 +243,8 @@ const SettingsScreen = ({ navigation }) => {
         style={styles.modalOverlay}
       >
         <View style={styles.modalContainer}>
-          <LinearGradient colors={['#111827', '#1F2937']} style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Change Email</Text>
+          <LinearGradient colors={theme === 'dark' ? ['#111827', '#1F2937'] : ['#FFFFFF', '#F8FAFC']} style={styles.modalContent}>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>Change Email</Text>
             
             <Input
               label="New Email"
@@ -264,10 +264,10 @@ const SettingsScreen = ({ navigation }) => {
             
             <View style={styles.modalButtons}>
               <TouchableOpacity 
-                style={styles.cancelButton}
+                style={[styles.cancelButton, { backgroundColor: colors.border }]}
                 onPress={() => setShowEmailModal(false)}
               >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
+                <Text style={[styles.cancelButtonText, { color: colors.text }]}>Cancel</Text>
               </TouchableOpacity>
               
               <GradientButton
@@ -295,8 +295,8 @@ const SettingsScreen = ({ navigation }) => {
         style={styles.modalOverlay}
       >
         <View style={styles.modalContainer}>
-          <LinearGradient colors={['#111827', '#1F2937']} style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Change Username</Text>
+          <LinearGradient colors={theme === 'dark' ? ['#111827', '#1F2937'] : ['#FFFFFF', '#F8FAFC']} style={styles.modalContent}>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>Change Username</Text>
             
             <Input
               label="New Username"
@@ -307,10 +307,10 @@ const SettingsScreen = ({ navigation }) => {
             
             <View style={styles.modalButtons}>
               <TouchableOpacity 
-                style={styles.cancelButton}
+                style={[styles.cancelButton, { backgroundColor: colors.border }]}
                 onPress={() => setShowUsernameModal(false)}
               >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
+                <Text style={[styles.cancelButtonText, { color: colors.text }]}>Cancel</Text>
               </TouchableOpacity>
               
               <GradientButton
@@ -326,28 +326,74 @@ const SettingsScreen = ({ navigation }) => {
     </Modal>
   );
 
+  const renderNotificationsModal = () => (
+    <Modal
+      visible={showNotificationsModal}
+      transparent
+      animationType="slide"
+      onRequestClose={() => setShowNotificationsModal(false)}
+    >
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.modalOverlay}
+      >
+        <View style={styles.modalContainer}>
+          <LinearGradient colors={theme === 'dark' ? ['#111827', '#1F2937'] : ['#FFFFFF', '#F8FAFC']} style={styles.modalContent}>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>Notification Settings</Text>
+            
+            {Object.entries(notifications).map(([key, value]) => (
+              <View key={key} style={styles.notificationItem}>
+                <View style={styles.notificationContent}>
+                  <Text style={[styles.notificationTitle, { color: colors.text }]}>
+                    {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                  </Text>
+                  <Text style={[styles.notificationDescription, { color: colors.textSecondary }]}>
+                    {getNotificationDescription(key)}
+                  </Text>
+                </View>
+                <Switch
+                  value={value}
+                  onValueChange={(newValue) => updateNotificationSetting(key, newValue)}
+                  trackColor={{ false: colors.border, true: colors.primary }}
+                  thumbColor={value ? colors.surface : colors.background}
+                />
+              </View>
+            ))}
+            
+            <TouchableOpacity 
+              style={[styles.cancelButton, { backgroundColor: colors.primary, marginTop: 20 }]}
+              onPress={() => setShowNotificationsModal(false)}
+            >
+              <Text style={styles.cancelButtonText}>Done</Text>
+            </TouchableOpacity>
+          </LinearGradient>
+        </View>
+      </KeyboardAvoidingView>
+    </Modal>
+  );
+
   return (
     <SafeAreaProvider>
-      <SafeAreaView style={styles.container} edges={['top']}>
-        <LinearGradient colors={['#111827', '#1F2937']} style={styles.gradient}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
+        <LinearGradient colors={theme === 'dark' ? ['#111827', '#1F2937'] : ['#F8FAFC', '#E0F2FE']} style={styles.gradient}>
           {/* Header */}
-          <View style={styles.header}>
+          <View style={[styles.header, { borderBottomColor: colors.border }]}>
             <TouchableOpacity 
               style={styles.backButton}
               onPress={() => navigation.goBack()}
             >
-              <Text style={styles.backText}>← Back</Text>
+              <Text style={[styles.backText, { color: colors.primary }]}>← Back</Text>
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>Settings</Text>
+            <Text style={[styles.headerTitle, { color: colors.text }]}>Settings</Text>
             <View style={styles.headerRight} />
           </View>
 
           <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
             {/* Profile Section */}
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Profile</Text>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>Profile</Text>
               
-              <View style={styles.profileContainer}>
+              <View style={[styles.profileContainer, { backgroundColor: colors.card }]}>
                 <TouchableOpacity 
                   style={styles.profilePictureContainer}
                   onPress={handleProfilePictureChange}
@@ -367,122 +413,143 @@ const SettingsScreen = ({ navigation }) => {
                 </TouchableOpacity>
                 
                 <View style={styles.profileInfo}>
-                  <Text style={styles.profileName}>{user?.username || 'User'}</Text>
-                  <Text style={styles.profileEmail}>{user?.email || 'No email'}</Text>
+                  <Text style={[styles.profileName, { color: colors.text }]}>
+                    {user?.username || 'User'}
+                  </Text>
+                  <Text style={[styles.profileEmail, { color: colors.textSecondary }]}>
+                    {user?.email || 'No email'}
+                  </Text>
                 </View>
               </View>
             </View>
 
             {/* Account Settings */}
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Account Settings</Text>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>Account Settings</Text>
               
               <TouchableOpacity 
-                style={styles.settingItem}
+                style={[styles.settingItem, { backgroundColor: colors.card }]}
                 onPress={() => setShowUsernameModal(true)}
               >
                 <View style={styles.settingIcon}>
                   <Text style={styles.settingIconText}>👤</Text>
                 </View>
                 <View style={styles.settingContent}>
-                  <Text style={styles.settingTitle}>Username</Text>
-                  <Text style={styles.settingValue}>{user?.username || 'Not set'}</Text>
+                  <Text style={[styles.settingTitle, { color: colors.text }]}>Username</Text>
+                  <Text style={[styles.settingValue, { color: colors.textSecondary }]}>
+                    {user?.username || 'Not set'}
+                  </Text>
                 </View>
-                <Text style={styles.settingArrow}>›</Text>
+                <Text style={[styles.settingArrow, { color: colors.textSecondary }]}>›</Text>
               </TouchableOpacity>
 
               <TouchableOpacity 
-                style={styles.settingItem}
+                style={[styles.settingItem, { backgroundColor: colors.card }]}
                 onPress={() => setShowEmailModal(true)}
               >
                 <View style={styles.settingIcon}>
                   <Text style={styles.settingIconText}>✉️</Text>
                 </View>
                 <View style={styles.settingContent}>
-                  <Text style={styles.settingTitle}>Email</Text>
-                  <Text style={styles.settingValue}>{user?.email || 'Not set'}</Text>
+                  <Text style={[styles.settingTitle, { color: colors.text }]}>Email</Text>
+                  <Text style={[styles.settingValue, { color: colors.textSecondary }]}>
+                    {user?.email || 'Not set'}
+                  </Text>
                 </View>
-                <Text style={styles.settingArrow}>›</Text>
+                <Text style={[styles.settingArrow, { color: colors.textSecondary }]}>›</Text>
               </TouchableOpacity>
 
               <TouchableOpacity 
-                style={styles.settingItem}
+                style={[styles.settingItem, { backgroundColor: colors.card }]}
                 onPress={() => setShowPasswordModal(true)}
               >
                 <View style={styles.settingIcon}>
                   <Text style={styles.settingIconText}>🔒</Text>
                 </View>
                 <View style={styles.settingContent}>
-                  <Text style={styles.settingTitle}>Password</Text>
-                  <Text style={styles.settingValue}>••••••••</Text>
+                  <Text style={[styles.settingTitle, { color: colors.text }]}>Password</Text>
+                  <Text style={[styles.settingValue, { color: colors.textSecondary }]}>••••••••</Text>
                 </View>
-                <Text style={styles.settingArrow}>›</Text>
+                <Text style={[styles.settingArrow, { color: colors.textSecondary }]}>›</Text>
               </TouchableOpacity>
             </View>
 
             {/* App Settings */}
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>App Settings</Text>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>App Settings</Text>
               
-              <TouchableOpacity style={styles.settingItem}>
+              <TouchableOpacity 
+                style={[styles.settingItem, { backgroundColor: colors.card }]}
+                onPress={toggleTheme}
+              >
+                <View style={styles.settingIcon}>
+                  <Text style={styles.settingIconText}>{isDark ? '🌙' : '☀️'}</Text>
+                </View>
+                <View style={styles.settingContent}>
+                  <Text style={[styles.settingTitle, { color: colors.text }]}>Dark Mode</Text>
+                  <Text style={[styles.settingValue, { color: colors.textSecondary }]}>
+                    {isDark ? 'Enabled' : 'Disabled'}
+                  </Text>
+                </View>
+                <Switch
+                  value={isDark}
+                  onValueChange={toggleTheme}
+                  trackColor={{ false: colors.border, true: colors.primary }}
+                  thumbColor={isDark ? colors.surface : colors.background}
+                />
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={[styles.settingItem, { backgroundColor: colors.card }]}
+                onPress={() => setShowNotificationsModal(true)}
+              >
                 <View style={styles.settingIcon}>
                   <Text style={styles.settingIconText}>🔔</Text>
                 </View>
                 <View style={styles.settingContent}>
-                  <Text style={styles.settingTitle}>Notifications</Text>
-                  <Text style={styles.settingValue}>Enabled</Text>
+                  <Text style={[styles.settingTitle, { color: colors.text }]}>Notifications</Text>
+                  <Text style={[styles.settingValue, { color: colors.textSecondary }]}>
+                    {Object.values(notifications).some(v => v) ? 'Enabled' : 'Disabled'}
+                  </Text>
                 </View>
-                <Text style={styles.settingArrow}>›</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.settingItem}>
-                <View style={styles.settingIcon}>
-                  <Text style={styles.settingIconText}>🌙</Text>
-                </View>
-                <View style={styles.settingContent}>
-                  <Text style={styles.settingTitle}>Dark Mode</Text>
-                  <Text style={styles.settingValue}>Enabled</Text>
-                </View>
-                <Text style={styles.settingArrow}>›</Text>
+                <Text style={[styles.settingArrow, { color: colors.textSecondary }]}>›</Text>
               </TouchableOpacity>
             </View>
 
             {/* Support */}
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Support</Text>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>Support</Text>
               
-              <TouchableOpacity style={styles.settingItem}>
+              <TouchableOpacity 
+                style={[styles.settingItem, { backgroundColor: colors.card }]}
+                onPress={() => navigation.navigate('HelpFAQ')}
+              >
                 <View style={styles.settingIcon}>
                   <Text style={styles.settingIconText}>❓</Text>
                 </View>
                 <View style={styles.settingContent}>
-                  <Text style={styles.settingTitle}>Help & FAQ</Text>
-                  <Text style={styles.settingValue}>Get help</Text>
+                  <Text style={[styles.settingTitle, { color: colors.text }]}>Help & FAQ</Text>
+                  <Text style={[styles.settingValue, { color: colors.textSecondary }]}>
+                    Get help and answers
+                  </Text>
                 </View>
-                <Text style={styles.settingArrow}>›</Text>
+                <Text style={[styles.settingArrow, { color: colors.textSecondary }]}>›</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.settingItem}>
+              <TouchableOpacity 
+                style={[styles.settingItem, { backgroundColor: colors.card }]}
+                onPress={() => navigation.navigate('EmergencyContacts')}
+              >
                 <View style={styles.settingIcon}>
-                  <Text style={styles.settingIconText}>📞</Text>
+                  <Text style={styles.settingIconText}>🚨</Text>
                 </View>
                 <View style={styles.settingContent}>
-                  <Text style={styles.settingTitle}>Contact Us</Text>
-                  <Text style={styles.settingValue}>Send feedback</Text>
+                  <Text style={[styles.settingTitle, { color: colors.text }]}>Emergency Contacts</Text>
+                  <Text style={[styles.settingValue, { color: colors.textSecondary }]}>
+                    24/7 emergency numbers
+                  </Text>
                 </View>
-                <Text style={styles.settingArrow}>›</Text>
-              </TouchableOpacity>
-            </View>
-
-            {/* Logout */}
-            <View style={styles.section}>
-              <TouchableOpacity 
-                style={styles.logoutButton}
-                onPress={handleLogout}
-              >
-                <LinearGradient colors={['#EF4444', '#DC2626']} style={styles.logoutGradient}>
-                  <Text style={styles.logoutText}>🚪 Logout</Text>
-                </LinearGradient>
+                <Text style={[styles.settingArrow, { color: colors.textSecondary }]}>›</Text>
               </TouchableOpacity>
             </View>
           </ScrollView>
@@ -491,6 +558,7 @@ const SettingsScreen = ({ navigation }) => {
           {renderPasswordModal()}
           {renderEmailModal()}
           {renderUsernameModal()}
+          {renderNotificationsModal()}
         </LinearGradient>
       </SafeAreaView>
     </SafeAreaProvider>
@@ -512,18 +580,15 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#374151',
   },
   backButton: {
     padding: 8,
   },
   backText: {
-    color: '#3B82F6',
     fontSize: 16,
     fontWeight: '600',
   },
   headerTitle: {
-    color: '#FFFFFF',
     fontSize: 20,
     fontWeight: 'bold',
   },
@@ -538,7 +603,6 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   sectionTitle: {
-    color: '#FFFFFF',
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 16,
@@ -546,7 +610,6 @@ const styles = StyleSheet.create({
   profileContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#374151',
     borderRadius: 16,
     padding: 20,
   },
@@ -590,19 +653,16 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   profileName: {
-    color: '#FFFFFF',
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 4,
   },
   profileEmail: {
-    color: '#9CA3AF',
     fontSize: 14,
   },
   settingItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#374151',
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
@@ -623,32 +683,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   settingTitle: {
-    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 2,
   },
   settingValue: {
-    color: '#9CA3AF',
     fontSize: 14,
   },
   settingArrow: {
-    color: '#6B7280',
     fontSize: 20,
-    fontWeight: 'bold',
-  },
-  logoutButton: {
-    borderRadius: 12,
-    overflow: 'hidden',
-    marginBottom: 40,
-  },
-  logoutGradient: {
-    paddingVertical: 16,
-    alignItems: 'center',
-  },
-  logoutText: {
-    color: '#FFFFFF',
-    fontSize: 16,
     fontWeight: 'bold',
   },
   // Modal Styles
@@ -667,7 +710,6 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   modalTitle: {
-    color: '#FFFFFF',
     fontSize: 20,
     fontWeight: 'bold',
     textAlign: 'center',
@@ -680,7 +722,6 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     flex: 1,
-    backgroundColor: '#6B7280',
     borderRadius: 8,
     paddingVertical: 12,
     marginRight: 8,
@@ -694,6 +735,28 @@ const styles = StyleSheet.create({
   updateButton: {
     flex: 1,
     marginLeft: 8,
+  },
+  // Notification Modal Styles
+  notificationItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  notificationContent: {
+    flex: 1,
+    marginRight: 16,
+  },
+  notificationTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  notificationDescription: {
+    fontSize: 14,
+    lineHeight: 18,
   },
 });
 

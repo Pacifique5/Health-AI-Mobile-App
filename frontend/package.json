@@ -9,7 +9,7 @@
     "@expo/metro-config": "~54.0.14",
     "@react-native-async-storage/async-storage": "^2.2.0",
     "@react-native-community/slider": "5.0.1",
-    "@react-native-picker/picker": "2.11.1",
+    "@react-native-picker/picker": "^2.11.1",
     "@react-navigation/native": "^7.1.28",
     "@react-navigation/stack": "^7.6.15",
     "axios": "^1.13.2",

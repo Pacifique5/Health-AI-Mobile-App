@@ -18,6 +18,7 @@ import {
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AuthContext } from '../context/AuthContext';
+import { ThemeContext } from '../context/ThemeContext';
 import { 
   getConversations, 
   createConversation, 
@@ -30,6 +31,7 @@ const { width } = Dimensions.get('window');
 
 const DashboardScreen = ({ navigation, route }) => {
   const { user, logoutUser } = useContext(AuthContext);
+  const { theme, colors } = useContext(ThemeContext);
   const [showSidebar, setShowSidebar] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [messages, setMessages] = useState([]);
@@ -386,23 +388,6 @@ const DashboardScreen = ({ navigation, route }) => {
             
             {/* Bottom section */}
             <View style={styles.bottomSection}>
-              {/* Emergency Contacts Button */}
-              <TouchableOpacity 
-                style={styles.emergencyContactsButton}
-                onPress={() => {
-                  navigation.navigate('EmergencyContacts');
-                  setShowSidebar(false);
-                }}
-              >
-                <View style={styles.emergencyAvatar}>
-                  <Text style={styles.emergencyAvatarText}>🚨</Text>
-                </View>
-                <View style={styles.emergencyDetails}>
-                  <Text style={styles.emergencyName}>Emergency Contacts</Text>
-                  <Text style={styles.emergencyStatus}>Available 24/7</Text>
-                </View>
-              </TouchableOpacity>
-              
               {/* User info - clickable to show dropdown */}
               <TouchableOpacity 
                 style={styles.userInfoContainer}
@@ -442,10 +427,6 @@ const DashboardScreen = ({ navigation, route }) => {
                   >
                     <Text style={styles.dropdownIcon}>⚙️</Text>
                     <Text style={styles.dropdownText}>Settings</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.dropdownItem}>
-                    <Text style={styles.dropdownIcon}>✉️</Text>
-                    <Text style={styles.dropdownText}>Contact us</Text>
                   </TouchableOpacity>
                   <View style={styles.dropdownDivider} />
                   <TouchableOpacity 
@@ -1143,63 +1124,11 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   bottomSection: {
-    paddingTop: 16,
+    paddingTop: 20,
+    paddingBottom: 16,
     borderTopWidth: 1,
     borderTopColor: '#334155',
-  },
-  emergencyContactsButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    marginHorizontal: 12,
-    marginBottom: 12,
-    backgroundColor: '#334155',
-    borderRadius: 12,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    minHeight: 60,
-  },
-  emergencyAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#EF4444',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-    elevation: 2,
-    shadowColor: '#EF4444',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-  },
-  emergencyAvatarText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  emergencyDetails: {
-    flex: 1,
-  },
-  emergencyName: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 4,
-    letterSpacing: 0.3,
-  },
-  emergencyStatus: {
-    color: '#10B981',
-    fontSize: 11,
-    fontWeight: '500',
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 6,
-    alignSelf: 'flex-start',
+    marginTop: 'auto',
   },
   userInfoContainer: {
     flexDirection: 'row',
@@ -1307,8 +1236,8 @@ const styles = StyleSheet.create({
   },
   dropdownDivider: {
     height: 1,
-    backgroundColor: '#475569',
-    marginVertical: 2,
+    backgroundColor: 'rgba(71, 85, 105, 0.5)',
+    marginHorizontal: 16,
   },
 });
 

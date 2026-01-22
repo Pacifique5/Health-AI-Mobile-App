@@ -3,6 +3,8 @@ import React, { useContext } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { AuthProvider, AuthContext } from './src/context/AuthContext';
+import { ThemeProvider } from './src/context/ThemeContext';
+import { NotificationProvider } from './src/context/NotificationContext';
 import SplashScreen from './src/screens/SplashScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 import LandingScreen from './src/screens/LandingScreen';
@@ -14,6 +16,7 @@ import EmergencyContactsScreen from './src/screens/EmergencyContactsScreen';
 import SymptomCheckerScreen from './src/screens/SymptomCheckerScreen';
 import ResultsScreen from './src/screens/ResultsScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
+import HelpFAQScreen from './src/screens/HelpFAQScreen';
 
 const Stack = createStackNavigator();
 
@@ -42,6 +45,7 @@ function AppNavigator() {
             <Stack.Screen name="SymptomChecker" component={SymptomCheckerScreen} />
             <Stack.Screen name="Results" component={ResultsScreen} />
             <Stack.Screen name="Settings" component={SettingsScreen} />
+            <Stack.Screen name="HelpFAQ" component={HelpFAQScreen} />
           </>
         ) : (
           // Unauthenticated screens
@@ -60,8 +64,12 @@ function AppNavigator() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <AppNavigator />
-    </AuthProvider>
+    <ThemeProvider>
+      <NotificationProvider>
+        <AuthProvider>
+          <AppNavigator />
+        </AuthProvider>
+      </NotificationProvider>
+    </ThemeProvider>
   );
 }
