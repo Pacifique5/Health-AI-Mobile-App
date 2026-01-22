@@ -234,14 +234,31 @@ export class EnhancedSymptomService {
   }
 
   private checkForGreeting(input: string): string | null {
-    // Check for exact greeting matches or greetings at word boundaries
+    // Check for greeting matches - exact match or contains the greeting
     for (const greeting of this.greetings) {
       const greetingLower = greeting.greeting.toLowerCase();
-      // Check if input starts with greeting or is exactly the greeting
-      if (input === greetingLower || 
-          input.startsWith(greetingLower + ' ') || 
+      
+      // Exact match
+      if (input === greetingLower) {
+        return greeting.response;
+      }
+      
+      // Input starts with greeting
+      if (input.startsWith(greetingLower + ' ') || 
           input.startsWith(greetingLower + ',') ||
           input.startsWith(greetingLower + '.')) {
+        return greeting.response;
+      }
+      
+      // Input ends with greeting
+      if (input.endsWith(' ' + greetingLower) || 
+          input.endsWith(',' + greetingLower) ||
+          input.endsWith('.' + greetingLower)) {
+        return greeting.response;
+      }
+      
+      // For multi-word greetings, check if the full greeting is contained
+      if (greetingLower.includes(' ') && input.includes(greetingLower)) {
         return greeting.response;
       }
     }

@@ -12,7 +12,8 @@ import {
   Platform,
   StatusBar,
   Modal,
-  Animated
+  Animated,
+  Image
 } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -141,9 +142,14 @@ const DashboardScreen = ({ navigation, route }) => {
     if (!inputText.trim()) return;
     
     // Validate minimum 3 symptoms (unless it's a greeting)
-    const isGreeting = ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening'].some(
-      greeting => inputText.toLowerCase().trim().includes(greeting)
-    );
+    const greetingWords = ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening', 'good night', 'morning', 'afternoon', 'evening', 'greetings', 'thank you', 'thanks', 'bye', 'goodbye'];
+    const isGreeting = greetingWords.some(greeting => {
+      const inputLower = inputText.toLowerCase().trim();
+      return inputLower === greeting || 
+             inputLower.includes(greeting) ||
+             inputLower.startsWith(greeting + ' ') ||
+             inputLower.endsWith(' ' + greeting);
+    });
     
     if (!isGreeting) {
       const symptoms = inputText.split(',').map(s => s.trim()).filter(s => s.length > 0);
@@ -226,6 +232,11 @@ const DashboardScreen = ({ navigation, route }) => {
   };
 
   const handleNewConversation = async () => {
+    // Save current conversation state before clearing
+    if (currentConversation && messages.length > 0) {
+      await loadConversations(); // Refresh to ensure current conversation is saved
+    }
+    
     setMessages([]);
     setCurrentConversation(null);
     setShowSidebar(false);
@@ -294,7 +305,7 @@ const DashboardScreen = ({ navigation, route }) => {
           style: 'destructive',
           onPress: async () => {
             await logoutUser();
-            navigation.replace('Login');
+            // No need to navigate - AuthContext will handle the navigation automatically
           }
         },
       ]
@@ -398,9 +409,16 @@ const DashboardScreen = ({ navigation, route }) => {
                 onPress={toggleProfile}
               >
                 <View style={styles.avatar}>
-                  <Text style={styles.avatarText}>
-                    {user?.username ? user.username.charAt(0).toUpperCase() : 'A'}
-                  </Text>
+                  {user?.profilePicture ? (
+                    <Image 
+                      source={{ uri: user.profilePicture }} 
+                      style={styles.avatarImage}
+                    />
+                  ) : (
+                    <Text style={styles.avatarText}>
+                      {user?.username ? user.username.charAt(0).toUpperCase() : 'A'}
+                    </Text>
+                  )}
                 </View>
                 <View style={styles.userDetails}>
                   <Text style={styles.userName}>{user?.username || 'Admin User'}</Text>
@@ -414,7 +432,14 @@ const DashboardScreen = ({ navigation, route }) => {
               {/* Profile dropdown menu items */}
               {showProfile && (
                 <View style={styles.profileDropdown}>
-                  <TouchableOpacity style={styles.dropdownItem}>
+                  <TouchableOpacity 
+                    style={styles.dropdownItem}
+                    onPress={() => {
+                      navigation.navigate('Settings');
+                      setShowProfile(false);
+                      setShowSidebar(false);
+                    }}
+                  >
                     <Text style={styles.dropdownIcon}>⚙️</Text>
                     <Text style={styles.dropdownText}>Settings</Text>
                   </TouchableOpacity>
@@ -491,11 +516,7 @@ const DashboardScreen = ({ navigation, route }) => {
           </View>
 
           {/* Chat Area */}
-          <KeyboardAvoidingView 
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={styles.chatContainer}
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
-          >
+          <View style={styles.chatContainer}>
             {messages.length === 0 ? (
               // Empty State
               <ScrollView contentContainerStyle={styles.emptyState} showsVerticalScrollIndicator={false}>
@@ -577,35 +598,40 @@ const DashboardScreen = ({ navigation, route }) => {
                 {isTyping && renderTypingIndicator()}
               </ScrollView>
             )}
-          </KeyboardAvoidingView>
+          </View>
 
           {/* Input Footer */}
-          <View style={styles.inputFooter}>
-            <View style={styles.inputContainer}>
-              <TextInput
-                style={styles.messageInput}
-                value={inputText}
-                onChangeText={setInputText}
-                placeholder="Enter at least 3 symptoms: fever, cough, headache..."
-                placeholderTextColor="#9CA3AF"
-                multiline
-              />
-              <TouchableOpacity style={styles.heartButton}>
-                <Text style={styles.heartIcon}>❤️</Text>
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={styles.sendButton}
-                onPress={handleSendMessage}
-              >
-                <LinearGradient colors={['#3B82F6', '#06B6D4']} style={styles.sendGradient}>
-                  <Text style={styles.sendIcon}>➤</Text>
-                </LinearGradient>
-              </TouchableOpacity>
+          <KeyboardAvoidingView 
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+          >
+            <View style={styles.inputFooter}>
+              <View style={styles.inputContainer}>
+                <TextInput
+                  style={styles.messageInput}
+                  value={inputText}
+                  onChangeText={setInputText}
+                  placeholder="Enter at least 3 symptoms: fever, cough, headache..."
+                  placeholderTextColor="#9CA3AF"
+                  multiline
+                />
+                <TouchableOpacity style={styles.heartButton}>
+                  <Text style={styles.heartIcon}>❤️</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.sendButton}
+                  onPress={handleSendMessage}
+                >
+                  <LinearGradient colors={['#3B82F6', '#06B6D4']} style={styles.sendGradient}>
+                    <Text style={styles.sendIcon}>➤</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              </View>
+              <Text style={styles.disclaimer}>
+                SymptomAI provides health information, not medical advice. Consult healthcare professionals for medical concerns.
+              </Text>
             </View>
-            <Text style={styles.disclaimer}>
-              SymptomAI provides health information, not medical advice. Consult healthcare professionals for medical concerns.
-            </Text>
-          </View>
+          </KeyboardAvoidingView>
 
           {/* Sidebar */}
           {renderSidebar()}
@@ -723,6 +749,7 @@ const styles = StyleSheet.create({
   },
   chatContainer: {
     flex: 1,
+    marginBottom: 0,
   },
   emptyState: {
     flexGrow: 1,
@@ -907,17 +934,17 @@ const styles = StyleSheet.create({
     marginHorizontal: 2,
   },
   inputFooter: {
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    backgroundColor: 'rgba(255, 255, 255, 0.98)',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingTop: 12,
     paddingBottom: Platform.OS === 'ios' ? 34 : 12,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.1)',
-    elevation: 8,
+    borderTopColor: 'rgba(255, 255, 255, 0.2)',
+    elevation: 10,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
   },
   inputContainer: {
     flexDirection: 'row',
@@ -1208,6 +1235,11 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  avatarImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
   },
   userDetails: {
     flex: 1,

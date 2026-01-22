@@ -13,6 +13,7 @@ import QuickActionScreen from './src/screens/QuickActionScreen';
 import EmergencyContactsScreen from './src/screens/EmergencyContactsScreen';
 import SymptomCheckerScreen from './src/screens/SymptomCheckerScreen';
 import ResultsScreen from './src/screens/ResultsScreen';
+import SettingsScreen from './src/screens/SettingsScreen';
 
 const Stack = createStackNavigator();
 
@@ -40,6 +41,7 @@ function AppNavigator() {
             <Stack.Screen name="EmergencyContacts" component={EmergencyContactsScreen} />
             <Stack.Screen name="SymptomChecker" component={SymptomCheckerScreen} />
             <Stack.Screen name="Results" component={ResultsScreen} />
+            <Stack.Screen name="Settings" component={SettingsScreen} />
           </>
         ) : (
           // Unauthenticated screens

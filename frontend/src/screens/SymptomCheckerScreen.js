@@ -18,9 +18,14 @@ const SymptomCheckerScreen = ({ navigation }) => {
     }
 
     // Validate minimum 3 symptoms (unless it's a greeting)
-    const isGreeting = ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening'].some(
-      greeting => symptoms.toLowerCase().trim().includes(greeting)
-    );
+    const greetingWords = ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening', 'good night', 'morning', 'afternoon', 'evening', 'greetings', 'thank you', 'thanks', 'bye', 'goodbye'];
+    const isGreeting = greetingWords.some(greeting => {
+      const inputLower = symptoms.toLowerCase().trim();
+      return inputLower === greeting || 
+             inputLower.includes(greeting) ||
+             inputLower.startsWith(greeting + ' ') ||
+             inputLower.endsWith(' ' + greeting);
+    });
     
     if (!isGreeting) {
       const symptomList = symptoms.split(',').map(s => s.trim()).filter(s => s.length > 0);

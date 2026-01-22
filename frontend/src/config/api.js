@@ -79,6 +79,47 @@ export const getProfile = async () => {
   }
 };
 
+export const updateProfile = async (profileData) => {
+  try {
+    const response = await api.put('/api/auth/profile', profileData);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { error: error.message };
+  }
+};
+
+export const changePassword = async (currentPassword, newPassword) => {
+  try {
+    const response = await api.put('/api/auth/change-password', {
+      currentPassword,
+      newPassword
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { error: error.message };
+  }
+};
+
+export const uploadProfilePicture = async (imageAsset) => {
+  try {
+    const formData = new FormData();
+    formData.append('profilePicture', {
+      uri: imageAsset.uri,
+      type: imageAsset.type || 'image/jpeg',
+      name: imageAsset.fileName || 'profile.jpg',
+    });
+
+    const response = await api.post('/api/auth/upload-profile-picture', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { error: error.message };
+  }
+};
+
 // Symptom analysis
 export const analyzeSymptoms = async (symptoms) => {
   try {

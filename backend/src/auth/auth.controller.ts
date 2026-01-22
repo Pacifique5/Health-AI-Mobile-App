@@ -1,4 +1,5 @@
-import { Controller, Post, Body, Get, UseGuards, Request } from '@nestjs/common';
+import { Controller, Post, Body, Get, Put, UseGuards, Request, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthService } from './auth.service';
 import { LoginDto, SignupDto } from './dto/auth.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -24,6 +25,26 @@ export class AuthController {
       id: req.user.id,
       username: req.user.username,
       email: req.user.email,
+      profilePicture: req.user.profilePicture,
     };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put('profile')
+  async updateProfile(@Request() req, @Body() updateData: any) {
+    return this.authService.updateProfile(req.user.id, updateData);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put('change-password')
+  async changePassword(@Request() req, @Body() passwordData: { currentPassword: string; newPassword: string }) {
+    return this.authService.changePassword(req.user.id, passwordData.currentPassword, passwordData.newPassword);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('upload-profile-picture')
+  @UseInterceptors(FileInterceptor('profilePicture'))
+  async uploadProfilePicture(@Request() req, @UploadedFile() file: Express.Multer.File) {
+    return this.authService.uploadProfilePicture(req.user.id, file);
   }
 }
