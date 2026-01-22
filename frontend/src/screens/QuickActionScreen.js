@@ -1,12 +1,16 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import React, { useState, useContext } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Picker } from '@react-native-picker/picker';
+import { AuthContext } from '../context/AuthContext';
+import { analyzeSymptoms, createConversation, addMessage } from '../config/api';
 
 const QuickActionScreen = ({ route, navigation }) => {
   const { actionType } = route.params;
+  const { user } = useContext(AuthContext);
   const [formData, setFormData] = useState({});
+  const [loading, setLoading] = useState(false);
 
   const getScreenConfig = () => {
     switch (actionType?.type) {
@@ -88,21 +92,62 @@ const QuickActionScreen = ({ route, navigation }) => {
     return null;
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // Validate required fields
     const requiredFields = config.fields.filter(field => field.required);
     const missingFields = requiredFields.filter(field => !formData[field.key]);
     
     if (missingFields.length > 0) {
-      alert('Please fill in all required fields');
+      Alert.alert('Missing Information', 'Please fill in all required fields');
       return;
     }
 
-    // Process the form data
-    console.log('Form data:', formData);
+    setLoading(true);
     
-    // Navigate back to dashboard
-    navigation.goBack();
+    try {
+      if (actionType?.type === 'symptoms') {
+        // Handle symptom analysis
+        const symptoms = formData.symptoms;
+        const additionalInfo = [];
+        
+        if (formData.duration) additionalInfo.push(`Duration: ${formData.duration}`);
+        if (formData.severity) additionalInfo.push(`Severity: ${formData.severity}`);
+        
+        const fullSymptomDescription = additionalInfo.length > 0 
+          ? `${symptoms}. ${additionalInfo.join(', ')}`
+          : symptoms;
+
+        // Create conversation
+        const title = symptoms.length > 30 ? symptoms.substring(0, 30) + '...' : symptoms;
+        const conversation = await createConversation(title);
+        
+        // Add user message
+        await addMessage(conversation.id, fullSymptomDescription, 'user');
+        
+        // Get AI analysis
+        const response = await analyzeSymptoms(fullSymptomDescription);
+        
+        // Add AI response
+        await addMessage(conversation.id, response.message, 'ai');
+        
+        // Navigate to results
+        navigation.navigate('Results', { 
+          result: response,
+          conversationId: conversation.id,
+          symptoms: fullSymptomDescription
+        });
+      } else {
+        // Handle other action types (for now, just show success)
+        Alert.alert('Success', `${config.title} completed successfully!`, [
+          { text: 'OK', onPress: () => navigation.goBack() }
+        ]);
+      }
+    } catch (error) {
+      console.error('Error processing request:', error);
+      Alert.alert('Error', 'Failed to process your request. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const renderField = (field) => {
@@ -256,9 +301,15 @@ const QuickActionScreen = ({ route, navigation }) => {
               >
                 <Text style={styles.cancelButtonText}>Cancel</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+              <TouchableOpacity 
+                style={[styles.submitButton, loading && styles.disabledButton]} 
+                onPress={handleSubmit}
+                disabled={loading}
+              >
                 <LinearGradient colors={config.color} style={styles.submitGradient}>
-                  <Text style={styles.submitButtonText}>{config.buttonText}</Text>
+                  <Text style={styles.submitButtonText}>
+                    {loading ? 'Processing...' : config.buttonText}
+                  </Text>
                 </LinearGradient>
               </TouchableOpacity>
             </View>
@@ -457,6 +508,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#FFFFFF',
     letterSpacing: 0.3,
+  },
+  disabledButton: {
+    opacity: 0.6,
   },
 });
 

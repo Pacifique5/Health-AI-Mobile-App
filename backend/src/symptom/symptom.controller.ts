@@ -1,21 +1,20 @@
-import { Controller, Post, Body, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Request } from '@nestjs/common';
 import { SymptomService } from './symptom.service';
 import { AnalyzeDto } from './dto/symptom.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
-@Controller('api')
+@Controller('api/symptoms')
 export class SymptomController {
   constructor(private readonly symptomService: SymptomService) {}
 
   @Post('analyze')
-  async analyze(@Body() analyzeDto: AnalyzeDto) {
-    try {
-      const result = await this.symptomService.analyzeSymptoms(analyzeDto.symptoms);
-      return result;
-    } catch (error) {
-      throw new HttpException(
-        { error: error.message },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+  @UseGuards(JwtAuthGuard)
+  async analyze(@Body() analyzeDto: AnalyzeDto, @Request() req) {
+    const result = await this.symptomService.analyzeSymptoms(analyzeDto.symptoms);
+    return {
+      ...result,
+      userId: req.user.id,
+      timestamp: new Date().toISOString(),
+    };
   }
 }

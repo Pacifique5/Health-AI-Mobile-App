@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { signup } from '../config/api';
+import { AuthContext } from '../context/AuthContext';
 import Input from '../components/Input';
 import GradientButton from '../components/GradientButton';
 
 const SignupScreen = ({ navigation }) => {
+  const { loginUser } = useContext(AuthContext);
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -136,9 +138,10 @@ const SignupScreen = ({ navigation }) => {
 
     setLoading(true);
     try {
-      await signup(username, email, password);
+      const response = await signup(username, email, password);
+      await loginUser(response);
       Alert.alert('Success', 'Account created successfully!', [
-        { text: 'OK', onPress: () => navigation.navigate('Login') }
+        { text: 'OK', onPress: () => navigation.replace('Dashboard') }
       ]);
     } catch (error) {
       Alert.alert('Signup Failed', error.message || 'Email already exists');

@@ -1,75 +1,94 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ConflictException, UnauthorizedException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { LoginDto, SignupDto } from './dto/auth.dto';
-
-interface User {
-  username: string;
-  email: string;
-  password: string;
-}
+import { User } from '../entities/user.entity';
+import { LoginDto, SignupDto, AuthResponseDto } from './dto/auth.dto';
 
 @Injectable()
 export class AuthService {
-  private users: User[] = [
-    {
-      username: 'Admin User',
-      email: 'admin@example.com',
-      password: '$2b$10$YourHashedPasswordHere', // admin123
-    },
-    {
-      username: 'Test User',
-      email: 'user@example.com',
-      password: '$2b$10$YourHashedPasswordHere', // user123
-    },
-  ];
+  constructor(
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+    private jwtService: JwtService,
+  ) {}
 
-  async login(loginDto: LoginDto) {
-    const { username, password } = loginDto;
-    
-    const user = this.users.find(u => u.email === username);
-    
-    if (!user) {
-      throw new Error('Invalid email or password');
+  async signup(signupDto: SignupDto): Promise<AuthResponseDto> {
+    const { username, email, password } = signupDto;
+
+    // Check if user already exists
+    const existingUser = await this.userRepository.findOne({
+      where: [{ email }, { username }]
+    });
+
+    if (existingUser) {
+      throw new ConflictException('User with this email or username already exists');
     }
 
-    // For demo purposes, simple password check
-    // In production, use bcrypt.compare(password, user.password)
-    const isPasswordValid = password === 'admin123' || password === 'user123';
-    
-    if (!isPasswordValid) {
-      throw new Error('Invalid email or password');
-    }
+    // Hash password
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    // Create new user
+    const user = this.userRepository.create({
+      username,
+      email,
+      password: hashedPassword,
+    });
+
+    const savedUser = await this.userRepository.save(user);
+
+    // Generate JWT token
+    const payload = { sub: savedUser.id, email: savedUser.email };
+    const access_token = this.jwtService.sign(payload);
 
     return {
-      message: 'Login successful',
+      access_token,
       user: {
+        id: savedUser.id,
+        username: savedUser.username,
+        email: savedUser.email,
+      },
+    };
+  }
+
+  async login(loginDto: LoginDto): Promise<AuthResponseDto> {
+    const { email, password } = loginDto;
+
+    // Find user by email
+    const user = await this.userRepository.findOne({ where: { email } });
+
+    if (!user) {
+      throw new UnauthorizedException('Invalid email or password');
+    }
+
+    // Verify password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Invalid email or password');
+    }
+
+    // Generate JWT token
+    const payload = { sub: user.id, email: user.email };
+    const access_token = this.jwtService.sign(payload);
+
+    return {
+      access_token,
+      user: {
+        id: user.id,
         username: user.username,
         email: user.email,
       },
     };
   }
 
-  async signup(signupDto: SignupDto) {
-    const { username, email, password } = signupDto;
-    
-    const existingUser = this.users.find(u => u.email === email);
-    
-    if (existingUser) {
-      throw new Error('Email already exists');
+  async validateUser(userId: string): Promise<User> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new UnauthorizedException('User not found');
     }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    
-    const newUser: User = {
-      username,
-      email,
-      password: hashedPassword,
-    };
-    
-    this.users.push(newUser);
-
-    return {
-      message: 'Signup successful',
-    };
+    return user;
   }
 }

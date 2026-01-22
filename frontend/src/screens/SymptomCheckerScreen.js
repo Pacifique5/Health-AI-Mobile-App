@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { analyzeSymptoms } from '../config/api';
+import { analyzeSymptoms, createConversation, addMessage } from '../config/api';
+import { AuthContext } from '../context/AuthContext';
 import Input from '../components/Input';
 import GradientButton from '../components/GradientButton';
 
 const SymptomCheckerScreen = ({ navigation }) => {
+  const { user } = useContext(AuthContext);
   const [symptoms, setSymptoms] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -17,8 +19,25 @@ const SymptomCheckerScreen = ({ navigation }) => {
 
     setLoading(true);
     try {
+      // Create a new conversation for this symptom check
+      const title = symptoms.length > 30 ? symptoms.substring(0, 30) + '...' : symptoms;
+      const conversation = await createConversation(title);
+      
+      // Add user message
+      await addMessage(conversation.id, symptoms, 'user');
+      
+      // Get AI analysis
       const response = await analyzeSymptoms(symptoms);
-      navigation.navigate('Results', { result: response });
+      
+      // Add AI response
+      await addMessage(conversation.id, response.message, 'ai');
+      
+      // Navigate to results screen with the analysis
+      navigation.navigate('Results', { 
+        result: response,
+        conversationId: conversation.id,
+        symptoms: symptoms
+      });
     } catch (error) {
       Alert.alert('Analysis Failed', error.error || 'Unable to analyze symptoms. Please try again.');
     } finally {

@@ -15,7 +15,8 @@ export const AuthProvider = ({ children }) => {
     try {
       const userData = await AsyncStorage.getItem('user');
       if (userData) {
-        setUser(JSON.parse(userData));
+        const parsedUser = JSON.parse(userData);
+        setUser(parsedUser);
       }
     } catch (error) {
       console.error('Error loading user:', error);
@@ -26,8 +27,16 @@ export const AuthProvider = ({ children }) => {
 
   const loginUser = async (userData) => {
     try {
-      await AsyncStorage.setItem('user', JSON.stringify(userData));
-      setUser(userData);
+      // Store complete user data including token
+      const userToStore = {
+        id: userData.user.id,
+        username: userData.user.username,
+        email: userData.user.email,
+        access_token: userData.access_token
+      };
+      
+      await AsyncStorage.setItem('user', JSON.stringify(userToStore));
+      setUser(userToStore);
     } catch (error) {
       console.error('Error saving user:', error);
     }
@@ -42,8 +51,29 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const updateUser = async (updatedUserData) => {
+    try {
+      const currentUser = await AsyncStorage.getItem('user');
+      if (currentUser) {
+        const parsedUser = JSON.parse(currentUser);
+        const updatedUser = { ...parsedUser, ...updatedUserData };
+        await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
+        setUser(updatedUser);
+      }
+    } catch (error) {
+      console.error('Error updating user:', error);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, loginUser, logoutUser }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      loading, 
+      loginUser, 
+      logoutUser, 
+      updateUser,
+      isAuthenticated: !!user?.access_token 
+    }}>
       {children}
     </AuthContext.Provider>
   );

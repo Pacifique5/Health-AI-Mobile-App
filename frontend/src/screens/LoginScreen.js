@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, TextInput, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { AuthContext } from '../context/AuthContext';
+import { login } from '../config/api';
 
 const LoginScreen = ({ navigation }) => {
+  const { loginUser } = useContext(AuthContext);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -72,13 +75,17 @@ const LoginScreen = ({ navigation }) => {
     }
     
     setLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      const response = await login(email, password);
+      await loginUser(response);
       Alert.alert('Success', 'Login successful!', [
         { text: 'OK', onPress: () => navigation.replace('Dashboard') }
       ]);
-    }, 1000);
+    } catch (error) {
+      Alert.alert('Login Failed', error.message || 'Invalid email or password');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

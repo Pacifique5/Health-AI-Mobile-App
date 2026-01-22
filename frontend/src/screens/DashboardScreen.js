@@ -17,6 +17,13 @@ import {
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AuthContext } from '../context/AuthContext';
+import { 
+  getConversations, 
+  createConversation, 
+  addMessage, 
+  deleteConversation,
+  analyzeSymptoms 
+} from '../config/api';
 
 const { width } = Dimensions.get('window');
 
@@ -28,6 +35,8 @@ const DashboardScreen = ({ navigation, route }) => {
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [currentConversation, setCurrentConversation] = useState(null);
+  const [conversations, setConversations] = useState([]);
+  const [loading, setLoading] = useState(false);
   const scrollViewRef = useRef(null);
   const sidebarAnimation = useRef(new Animated.Value(-width * 0.8)).current;
 
@@ -99,6 +108,10 @@ const DashboardScreen = ({ navigation, route }) => {
 
 
   useEffect(() => {
+    loadConversations();
+  }, []);
+
+  useEffect(() => {
     if (showSidebar) {
       Animated.timing(sidebarAnimation, {
         toValue: 0,
@@ -132,7 +145,34 @@ const DashboardScreen = ({ navigation, route }) => {
     }
   }, [route.params]);
 
-  const handleSendMessage = () => {
+  const loadConversations = async () => {
+    try {
+      setLoading(true);
+      const data = await getConversations();
+      setConversations(data.map(conv => ({
+        ...conv,
+        time: formatTime(conv.updatedAt),
+        messages: conv.messages || []
+      })));
+    } catch (error) {
+      console.error('Error loading conversations:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatTime = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInHours = Math.floor((now - date) / (1000 * 60 * 60));
+    
+    if (diffInHours < 1) return 'Just now';
+    if (diffInHours < 24) return `${diffInHours}h ago`;
+    if (diffInHours < 48) return '1d ago';
+    return `${Math.floor(diffInHours / 24)}d ago`;
+  };
+
+  const handleSendMessage = async () => {
     if (!inputText.trim()) return;
     
     const newMessage = {
@@ -143,6 +183,7 @@ const DashboardScreen = ({ navigation, route }) => {
     };
     
     setMessages(prev => [...prev, newMessage]);
+    const userInput = inputText;
     setInputText('');
     setIsTyping(true);
     
@@ -150,40 +191,111 @@ const DashboardScreen = ({ navigation, route }) => {
     setTimeout(() => {
       scrollViewRef.current?.scrollToEnd({ animated: true });
     }, 100);
-    
-    // Simulate AI response
-    setTimeout(() => {
-      setIsTyping(false);
-      const aiResponse = {
+
+    try {
+      let conversationId = currentConversation?.id;
+      
+      // Create new conversation if none exists
+      if (!conversationId) {
+        const title = userInput.length > 30 ? userInput.substring(0, 30) + '...' : userInput;
+        const newConv = await createConversation(title);
+        conversationId = newConv.id;
+        setCurrentConversation(newConv);
+        await loadConversations(); // Refresh conversations list
+      }
+
+      // Add user message to conversation
+      await addMessage(conversationId, userInput, 'user');
+
+      // Get AI response from symptom analysis
+      const aiResponse = await analyzeSymptoms(userInput);
+      
+      const aiMessage = {
         id: Date.now() + 1,
-        text: "I understand you're experiencing symptoms. Let me help you analyze them. Can you provide more details about when these symptoms started and their severity?",
+        text: aiResponse.message,
         sender: 'ai',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
-      setMessages(prev => [...prev, aiResponse]);
+
+      // Add AI message to conversation
+      await addMessage(conversationId, aiResponse.message, 'ai');
       
+      setMessages(prev => [...prev, aiMessage]);
+      await loadConversations(); // Refresh conversations list
+      
+    } catch (error) {
+      console.error('Error sending message:', error);
+      const errorMessage = {
+        id: Date.now() + 1,
+        text: "I'm sorry, I'm having trouble processing your request right now. Please try again.",
+        sender: 'ai',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsTyping(false);
       setTimeout(() => {
         scrollViewRef.current?.scrollToEnd({ animated: true });
       }, 100);
-    }, 2000);
+    }
   };
 
   const handleQuickAction = (action) => {
     navigation.navigate('QuickAction', { actionType: action });
   };
 
-  const handleNewConversation = () => {
+  const handleNewConversation = async () => {
     setMessages([]);
     setCurrentConversation(null);
     setShowSidebar(false);
     setShowProfile(false);
   };
 
-  const handleSelectConversation = (conversation) => {
-    setMessages(conversation.messages);
-    setCurrentConversation(conversation);
-    setShowSidebar(false);
-    setShowProfile(false);
+  const handleSelectConversation = async (conversation) => {
+    try {
+      // Convert backend message format to frontend format
+      const formattedMessages = conversation.messages.map(msg => ({
+        id: msg.id,
+        text: msg.content,
+        sender: msg.sender,
+        timestamp: new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      }));
+      
+      setMessages(formattedMessages);
+      setCurrentConversation(conversation);
+      setShowSidebar(false);
+      setShowProfile(false);
+    } catch (error) {
+      console.error('Error selecting conversation:', error);
+      Alert.alert('Error', 'Failed to load conversation');
+    }
+  };
+
+  const handleDeleteConversation = async (conversationId) => {
+    Alert.alert(
+      'Delete Conversation',
+      'Are you sure you want to delete this conversation?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Delete', 
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteConversation(conversationId);
+              await loadConversations();
+              if (currentConversation?.id === conversationId) {
+                setMessages([]);
+                setCurrentConversation(null);
+              }
+            } catch (error) {
+              console.error('Error deleting conversation:', error);
+              Alert.alert('Error', 'Failed to delete conversation');
+            }
+          }
+        },
+      ]
+    );
   };
 
   const toggleProfile = () => {
@@ -244,22 +356,33 @@ const DashboardScreen = ({ navigation, route }) => {
             </TouchableOpacity>
             
             <ScrollView style={styles.conversationsList} showsVerticalScrollIndicator={false}>
-              {conversations.length > 0 ? (
+              {loading ? (
+                <View style={styles.loadingContainer}>
+                  <Text style={styles.loadingText}>Loading conversations...</Text>
+                </View>
+              ) : conversations.length > 0 ? (
                 conversations.map((conversation) => (
-                  <TouchableOpacity
-                    key={conversation.id}
-                    style={[
-                      styles.conversationItem,
-                      currentConversation?.id === conversation.id && styles.activeConversation
-                    ]}
-                    onPress={() => handleSelectConversation(conversation)}
-                  >
-                    <Text style={styles.conversationTitle}>{conversation.title}</Text>
-                    <Text style={styles.conversationPreview} numberOfLines={1}>
-                      {conversation.lastMessage}
-                    </Text>
-                    <Text style={styles.conversationTime}>{conversation.time}</Text>
-                  </TouchableOpacity>
+                  <View key={conversation.id} style={styles.conversationItemContainer}>
+                    <TouchableOpacity
+                      style={[
+                        styles.conversationItem,
+                        currentConversation?.id === conversation.id && styles.activeConversation
+                      ]}
+                      onPress={() => handleSelectConversation(conversation)}
+                    >
+                      <Text style={styles.conversationTitle}>{conversation.title}</Text>
+                      <Text style={styles.conversationPreview} numberOfLines={1}>
+                        {conversation.lastMessage || 'No messages yet'}
+                      </Text>
+                      <Text style={styles.conversationTime}>{conversation.time}</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.deleteButton}
+                      onPress={() => handleDeleteConversation(conversation.id)}
+                    >
+                      <Text style={styles.deleteButtonText}>🗑️</Text>
+                    </TouchableOpacity>
+                  </View>
                 ))
               ) : (
                 <View style={styles.noConversations}>
@@ -920,12 +1043,34 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 16,
   },
+  loadingContainer: {
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  loadingText: {
+    color: '#94A3B8',
+    fontSize: 14,
+  },
+  conversationItemContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
   conversationItem: {
+    flex: 1,
     paddingVertical: 12,
     paddingHorizontal: 12,
-    marginBottom: 6,
     borderRadius: 10,
     backgroundColor: 'rgba(51, 65, 85, 0.3)',
+  },
+  deleteButton: {
+    padding: 8,
+    marginLeft: 8,
+    borderRadius: 6,
+    backgroundColor: 'rgba(239, 68, 68, 0.2)',
+  },
+  deleteButtonText: {
+    fontSize: 16,
   },
   activeConversation: {
     backgroundColor: '#334155',

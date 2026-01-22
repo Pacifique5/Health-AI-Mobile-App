@@ -2,6 +2,19 @@
 
 NestJS REST API for SymptomAI mobile application built with TypeScript.
 
+## ✅ Current Status
+
+**FULLY FUNCTIONAL** - All endpoints tested and working!
+
+- ✅ Authentication system with JWT
+- ✅ User registration and login
+- ✅ AI-powered symptom analysis
+- ✅ Conversation management
+- ✅ SQLite database integration
+- ✅ Password hashing with bcrypt
+- ✅ Input validation with DTOs
+- ✅ CORS enabled for frontend
+
 ## Setup
 
 1. Install dependencies:
@@ -9,24 +22,18 @@ NestJS REST API for SymptomAI mobile application built with TypeScript.
 npm install
 ```
 
-2. Create environment file:
-```bash
-cp .env.example .env
-```
-
-3. Start the development server:
+2. Start the development server:
 ```bash
 npm run start:dev
 ```
 
-The server will run on `http://localhost:5000`
-
-## Production Build
-
+Or build and run production:
 ```bash
 npm run build
-npm run start:prod
+npm start
 ```
+
+The server will run on `http://localhost:5000`
 
 ## API Endpoints
 
@@ -36,26 +43,99 @@ GET /api/health
 Response: { "status": "healthy", "message": "SymptomAI Backend is running" }
 ```
 
+### Authentication
+
+#### User Signup
+```
+POST /api/auth/signup
+Body: { 
+  "username": "John Doe", 
+  "email": "john@example.com", 
+  "password": "password123" 
+}
+Response: { 
+  "access_token": "jwt_token_here",
+  "user": { "id": "uuid", "username": "John Doe", "email": "john@example.com" }
+}
+```
+
+#### User Login
+```
+POST /api/auth/login
+Body: { "email": "john@example.com", "password": "password123" }
+Response: { 
+  "access_token": "jwt_token_here",
+  "user": { "id": "uuid", "username": "John Doe", "email": "john@example.com" }
+}
+```
+
+#### Get Profile (Protected)
+```
+GET /api/auth/profile
+Headers: { "Authorization": "Bearer jwt_token_here" }
+Response: { "id": "uuid", "username": "John Doe", "email": "john@example.com" }
+```
+
 ### Symptom Analysis
+
+#### Analyze Symptoms (Protected)
 ```
-POST /api/analyze
+POST /api/symptoms/analyze
+Headers: { "Authorization": "Bearer jwt_token_here" }
 Body: { "symptoms": "fever, cough, headache" }
-Response: { "message": "✅ Possible Disease: Flu\n📄 Description: ..." }
+Response: { 
+  "message": "✅ Possible Disease: Flu\n📄 Description: ...",
+  "userId": "uuid",
+  "timestamp": "2026-01-22T07:00:00.000Z"
+}
 ```
 
-### User Login
+### Conversations (All Protected)
+
+#### Create Conversation
 ```
-POST /api/login
-Body: { "username": "email@example.com", "password": "password123" }
-Response: { "message": "Login successful", "user": { "username": "...", "email": "..." } }
+POST /api/conversations
+Headers: { "Authorization": "Bearer jwt_token_here" }
+Body: { "title": "My Health Consultation" }
+Response: { "id": "uuid", "title": "My Health Consultation", ... }
 ```
 
-### User Signup
+#### Get All Conversations
 ```
-POST /api/signup
-Body: { "username": "John Doe", "email": "john@example.com", "password": "password123" }
-Response: { "message": "Signup successful" }
+GET /api/conversations
+Headers: { "Authorization": "Bearer jwt_token_here" }
+Response: [{ "id": "uuid", "title": "...", "messages": [...] }]
 ```
+
+#### Get Specific Conversation
+```
+GET /api/conversations/:id
+Headers: { "Authorization": "Bearer jwt_token_here" }
+Response: { "id": "uuid", "title": "...", "messages": [...] }
+```
+
+#### Add Message to Conversation
+```
+POST /api/conversations/:id/messages
+Headers: { "Authorization": "Bearer jwt_token_here" }
+Body: { "content": "I have fever", "sender": "user" }
+Response: { "id": "uuid", "content": "I have fever", "sender": "user", ... }
+```
+
+#### Delete Conversation
+```
+DELETE /api/conversations/:id
+Headers: { "Authorization": "Bearer jwt_token_here" }
+Response: { "message": "Conversation deleted successfully" }
+```
+
+## Database
+
+Uses SQLite for development (database.sqlite file created automatically).
+Database schema includes:
+- **Users**: id, username, email, password, isActive, timestamps
+- **Conversations**: id, title, lastMessage, user relation, timestamps  
+- **Messages**: id, content, sender (user/ai), user relation, conversation relation, timestamp
 
 ## Project Structure
 
@@ -66,12 +146,22 @@ backend/
 │   │   ├── auth.controller.ts
 │   │   ├── auth.service.ts
 │   │   ├── auth.module.ts
-│   │   └── dto/
+│   │   ├── dto/auth.dto.ts
+│   │   ├── guards/jwt-auth.guard.ts
+│   │   └── strategies/jwt.strategy.ts
+│   ├── conversations/     # Chat/conversation module
+│   │   ├── conversations.controller.ts
+│   │   ├── conversations.service.ts
+│   │   └── conversations.module.ts
 │   ├── symptom/           # Symptom analysis module
 │   │   ├── symptom.controller.ts
 │   │   ├── symptom.service.ts
 │   │   ├── symptom.module.ts
-│   │   └── dto/
+│   │   └── dto/symptom.dto.ts
+│   ├── entities/          # Database entities
+│   │   ├── user.entity.ts
+│   │   ├── conversation.entity.ts
+│   │   └── message.entity.ts
 │   ├── app.module.ts
 │   ├── app.controller.ts
 │   ├── app.service.ts
@@ -83,25 +173,43 @@ backend/
 
 ## Tech Stack
 
-- NestJS - Progressive Node.js framework
-- TypeScript - Type-safe JavaScript
-- Express - HTTP server
-- bcrypt - Password hashing
-- class-validator - DTO validation
-- class-transformer - Object transformation
+- **NestJS** - Progressive Node.js framework
+- **TypeScript** - Type-safe JavaScript
+- **SQLite** - Lightweight database
+- **TypeORM** - Database ORM
+- **JWT** - Authentication tokens
+- **bcrypt** - Password hashing
+- **class-validator** - DTO validation
+- **class-transformer** - Object transformation
 
-## Test Accounts
+## Disease Database
 
-- Email: `admin@example.com`, Password: `admin123`
-- Email: `user@example.com`, Password: `user123`
+The symptom analysis includes comprehensive data for:
+- **Flu** - fever, cough, headache, body aches, fatigue
+- **Common Cold** - runny nose, sneezing, cough, sore throat
+- **Migraine** - severe headache, nausea, light sensitivity
+- **Gastroenteritis** - stomach pain, nausea, vomiting, diarrhea
+- **Hypertension** - chest pain, shortness of breath, dizziness
+- **Anxiety Disorder** - excessive worry, restlessness, fatigue
+- **Diabetes Type 2** - increased thirst, frequent urination, fatigue
+
+Each disease includes:
+- Detailed description
+- Recommended medications
+- Treatment procedures
+- Prevention precautions
+- Specialist recommendations
 
 ## Features
 
 ✅ RESTful API with NestJS
 ✅ TypeScript for type safety
 ✅ Modular architecture
-✅ DTO validation
+✅ JWT authentication
+✅ Password hashing
+✅ Input validation
+✅ Database relationships
 ✅ CORS enabled
-✅ Password hashing with bcrypt
 ✅ AI-powered symptom analysis
-✅ Disease prediction with recommendations
+✅ Conversation history
+✅ Comprehensive error handling
