@@ -40,41 +40,6 @@ const DashboardScreen = ({ navigation, route }) => {
   const scrollViewRef = useRef(null);
   const sidebarAnimation = useRef(new Animated.Value(-width * 0.8)).current;
 
-  const conversations = [
-    { 
-      id: 1, 
-      title: 'Headache symptoms', 
-      lastMessage: 'Based on your symptoms, it could be tension headache...', 
-      time: '2h ago',
-      messages: [
-        { id: 1, text: 'I have been having headaches for the past 3 days', sender: 'user', timestamp: '10:30 AM' },
-        { id: 2, text: 'I understand you\'re experiencing headaches. Can you describe the pain - is it throbbing, sharp, or dull? And where exactly do you feel it?', sender: 'ai', timestamp: '10:31 AM' },
-        { id: 3, text: 'It\'s a dull pain on both sides of my head, feels like pressure', sender: 'user', timestamp: '10:32 AM' },
-        { id: 4, text: 'Based on your symptoms, it could be tension headache. Have you been under stress lately or spending long hours at a computer?', sender: 'ai', timestamp: '10:33 AM' }
-      ]
-    },
-    { 
-      id: 2, 
-      title: 'Heart health check', 
-      lastMessage: 'Your heart rate seems normal for your age group...', 
-      time: '1d ago',
-      messages: [
-        { id: 1, text: 'I want to check my heart health', sender: 'user', timestamp: 'Yesterday 2:15 PM' },
-        { id: 2, text: 'I\'d be happy to help you with heart health information. Can you tell me your age and if you have any specific concerns?', sender: 'ai', timestamp: 'Yesterday 2:16 PM' }
-      ]
-    },
-    { 
-      id: 3, 
-      title: 'Medication reminder', 
-      lastMessage: 'Don\'t forget to take your medication at 8 PM...', 
-      time: '3d ago',
-      messages: [
-        { id: 1, text: 'Can you help me set up medication reminders?', sender: 'user', timestamp: '3 days ago 11:20 AM' },
-        { id: 2, text: 'Of course! I can help you set up medication reminders. What medication do you need reminders for?', sender: 'ai', timestamp: '3 days ago 11:21 AM' }
-      ]
-    },
-  ];
-
   const quickActions = [
     { 
       id: 1, 
