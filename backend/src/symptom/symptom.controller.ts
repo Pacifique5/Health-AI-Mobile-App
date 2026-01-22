@@ -1,11 +1,11 @@
 import { Controller, Post, Body, UseGuards, Request } from '@nestjs/common';
-import { SymptomService } from './symptom.service';
+import { EnhancedSymptomService } from './enhanced-symptom.service';
 import { AnalyzeDto } from './dto/symptom.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @Controller('api/symptoms')
 export class SymptomController {
-  constructor(private readonly symptomService: SymptomService) {}
+  constructor(private readonly symptomService: EnhancedSymptomService) {}
 
   @Post('analyze')
   @UseGuards(JwtAuthGuard)

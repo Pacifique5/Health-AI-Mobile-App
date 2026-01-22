@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { SymptomController } from './symptom.controller';
-import { SymptomService } from './symptom.service';
+import { EnhancedSymptomService } from './enhanced-symptom.service';
 
 @Module({
   controllers: [SymptomController],
-  providers: [SymptomService],
+  providers: [EnhancedSymptomService],
 })
 export class SymptomModule {}

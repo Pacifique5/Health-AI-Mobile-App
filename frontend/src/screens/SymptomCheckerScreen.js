@@ -17,6 +17,22 @@ const SymptomCheckerScreen = ({ navigation }) => {
       return;
     }
 
+    // Validate minimum 3 symptoms (unless it's a greeting)
+    const isGreeting = ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening'].some(
+      greeting => symptoms.toLowerCase().trim().includes(greeting)
+    );
+    
+    if (!isGreeting) {
+      const symptomList = symptoms.split(',').map(s => s.trim()).filter(s => s.length > 0);
+      if (symptomList.length < 3) {
+        Alert.alert(
+          'Minimum Symptoms Required', 
+          'Please enter at least 3 symptoms separated by commas for accurate analysis.\n\nExample: fever, cough, headache'
+        );
+        return;
+      }
+    }
+
     setLoading(true);
     try {
       // Create a new conversation for this symptom check
@@ -61,25 +77,25 @@ const SymptomCheckerScreen = ({ navigation }) => {
 
           <Text style={styles.title}>Symptom Checker</Text>
           <Text style={styles.subtitle}>
-            Enter your symptoms separated by commas
+            Enter at least 3 symptoms separated by commas for accurate analysis
           </Text>
 
           <View style={styles.form}>
             <Input
-              label="Symptoms"
+              label="Symptoms (minimum 3 required)"
               value={symptoms}
               onChangeText={setSymptoms}
-              placeholder="e.g., fever, cough, headache"
+              placeholder="e.g., fever, cough, headache, body aches"
               multiline
               numberOfLines={4}
               style={styles.textArea}
             />
             
             <View style={styles.exampleContainer}>
-              <Text style={styles.exampleTitle}>Examples:</Text>
-              <Text style={styles.exampleText}>• fever, cough, headache</Text>
-              <Text style={styles.exampleText}>• stomach pain, nausea</Text>
-              <Text style={styles.exampleText}>• chest pain, shortness of breath</Text>
+              <Text style={styles.exampleTitle}>Examples (minimum 3 symptoms):</Text>
+              <Text style={styles.exampleText}>• fever, cough, headache, body aches</Text>
+              <Text style={styles.exampleText}>• stomach pain, nausea, vomiting, diarrhea</Text>
+              <Text style={styles.exampleText}>• chest pain, shortness of breath, dizziness</Text>
             </View>
 
             <GradientButton 

@@ -140,6 +140,22 @@ const DashboardScreen = ({ navigation, route }) => {
   const handleSendMessage = async () => {
     if (!inputText.trim()) return;
     
+    // Validate minimum 3 symptoms (unless it's a greeting)
+    const isGreeting = ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening'].some(
+      greeting => inputText.toLowerCase().trim().includes(greeting)
+    );
+    
+    if (!isGreeting) {
+      const symptoms = inputText.split(',').map(s => s.trim()).filter(s => s.length > 0);
+      if (symptoms.length < 3) {
+        Alert.alert(
+          'Minimum Symptoms Required', 
+          'Please enter at least 3 symptoms separated by commas for accurate analysis.\n\nExample: fever, cough, headache'
+        );
+        return;
+      }
+    }
+    
     const newMessage = {
       id: Date.now(),
       text: inputText,
@@ -478,6 +494,7 @@ const DashboardScreen = ({ navigation, route }) => {
           <KeyboardAvoidingView 
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             style={styles.chatContainer}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
           >
             {messages.length === 0 ? (
               // Empty State
@@ -491,7 +508,10 @@ const DashboardScreen = ({ navigation, route }) => {
                   <Text style={styles.welcomeTitle}>Welcome to SymptomAI</Text>
                   <Text style={styles.welcomeSubtitle}>
                     I'm here to help you understand your symptoms and provide health insights. 
-                    How can I assist you today?
+                    Please describe at least 3 symptoms separated by commas for accurate analysis.
+                  </Text>
+                  <Text style={styles.exampleText}>
+                    Example: fever, cough, headache
                   </Text>
                 </View>
                 
@@ -566,7 +586,7 @@ const DashboardScreen = ({ navigation, route }) => {
                 style={styles.messageInput}
                 value={inputText}
                 onChangeText={setInputText}
-                placeholder="Type your message..."
+                placeholder="Enter at least 3 symptoms: fever, cough, headache..."
                 placeholderTextColor="#9CA3AF"
                 multiline
               />
@@ -741,6 +761,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 22,
     paddingHorizontal: 16,
+    marginBottom: 8,
+  },
+  exampleText: {
+    fontSize: 13,
+    color: '#3B82F6',
+    textAlign: 'center',
+    fontWeight: '600',
+    fontStyle: 'italic',
   },
   quickActionsGrid: {
     flexDirection: 'row',
@@ -879,11 +907,17 @@ const styles = StyleSheet.create({
     marginHorizontal: 2,
   },
   inputFooter: {
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
     paddingHorizontal: 16,
     paddingVertical: 12,
+    paddingBottom: Platform.OS === 'ios' ? 34 : 12,
     borderTopWidth: 1,
     borderTopColor: 'rgba(255, 255, 255, 0.1)',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   inputContainer: {
     flexDirection: 'row',
@@ -898,14 +932,17 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.15,
     shadowRadius: 8,
+    minHeight: 56,
   },
   messageInput: {
     flex: 1,
     fontSize: 15,
     color: '#111827',
     maxHeight: 100,
+    minHeight: 40,
     paddingVertical: 8,
     paddingRight: 8,
+    textAlignVertical: 'center',
   },
   heartButton: {
     padding: 8,
