@@ -386,6 +386,31 @@ const DashboardScreen = ({ navigation, route }) => {
               )}
             </ScrollView>
             
+            {/* Profile dropdown - positioned above bottom section */}
+            {showProfile && (
+              <View style={styles.profileDropdown}>
+                <TouchableOpacity 
+                  style={styles.dropdownItem}
+                  onPress={() => {
+                    navigation.navigate('Settings');
+                    setShowProfile(false);
+                    setShowSidebar(false);
+                  }}
+                >
+                  <Text style={styles.dropdownIcon}>⚙️</Text>
+                  <Text style={styles.dropdownText}>Settings</Text>
+                </TouchableOpacity>
+                <View style={styles.dropdownDivider} />
+                <TouchableOpacity 
+                  style={styles.dropdownItem}
+                  onPress={handleLogout}
+                >
+                  <Text style={styles.dropdownIcon}>🚪</Text>
+                  <Text style={[styles.dropdownText, { color: '#EF4444' }]}>Log out</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+            
             {/* Bottom section */}
             <View style={styles.bottomSection}>
               {/* User info - clickable to show dropdown */}
@@ -413,31 +438,6 @@ const DashboardScreen = ({ navigation, route }) => {
                   <Text style={[styles.expandIcon, { transform: [{ rotate: showProfile ? '180deg' : '0deg' }] }]}>⌃</Text>
                 </View>
               </TouchableOpacity>
-              
-              {/* Profile dropdown menu items */}
-              {showProfile && (
-                <View style={styles.profileDropdown}>
-                  <TouchableOpacity 
-                    style={styles.dropdownItem}
-                    onPress={() => {
-                      navigation.navigate('Settings');
-                      setShowProfile(false);
-                      setShowSidebar(false);
-                    }}
-                  >
-                    <Text style={styles.dropdownIcon}>⚙️</Text>
-                    <Text style={styles.dropdownText}>Settings</Text>
-                  </TouchableOpacity>
-                  <View style={styles.dropdownDivider} />
-                  <TouchableOpacity 
-                    style={styles.dropdownItem}
-                    onPress={handleLogout}
-                  >
-                    <Text style={styles.dropdownIcon}>🚪</Text>
-                    <Text style={[styles.dropdownText, { color: '#EF4444' }]}>Log out</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
             </View>
           </TouchableOpacity>
         </Animated.View>
@@ -1030,7 +1030,7 @@ const styles = StyleSheet.create({
   newConversationButton: {
     marginHorizontal: 16,
     marginTop: 16,
-    marginBottom: 20,
+    marginBottom: 290,
     borderRadius: 12,
     overflow: 'hidden',
     elevation: 4,
@@ -1052,6 +1052,7 @@ const styles = StyleSheet.create({
   conversationsList: {
     flex: 1,
     paddingHorizontal: 16,
+    paddingTop: 8,
   },
   loadingContainer: {
     alignItems: 'center',
@@ -1193,38 +1194,44 @@ const styles = StyleSheet.create({
   expandButton: {
     padding: 8,
     borderRadius: 20,
-    backgroundColor: 'rgba(148, 163, 184, 0.1)',
+    backgroundColor: 'rgba(148, 163, 184, 0.15)',
+    minWidth: 32,
+    minHeight: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   expandIcon: {
     color: '#94A3B8',
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: 'bold',
   },
   profileDropdown: {
+    position: 'absolute',
+    bottom: 80,
+    left: 12,
+    right: 12,
     backgroundColor: '#334155',
-    marginHorizontal: 12,
-    marginBottom: 12,
     borderRadius: 12,
     overflow: 'hidden',
-    elevation: 4,
+    elevation: 8,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
   },
   dropdownItem: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(71, 85, 105, 0.5)',
-    minHeight: 48,
+    borderBottomColor: 'rgba(71, 85, 105, 0.3)',
+    minHeight: 52,
   },
   dropdownIcon: {
-    fontSize: 16,
-    marginRight: 12,
-    width: 20,
+    fontSize: 18,
+    marginRight: 14,
+    width: 22,
     textAlign: 'center',
   },
   dropdownText: {
@@ -1236,7 +1243,7 @@ const styles = StyleSheet.create({
   },
   dropdownDivider: {
     height: 1,
-    backgroundColor: 'rgba(71, 85, 105, 0.5)',
+    backgroundColor: 'rgba(71, 85, 105, 0.3)',
     marginHorizontal: 16,
   },
 });
