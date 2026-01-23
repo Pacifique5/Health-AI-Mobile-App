@@ -3,7 +3,11 @@
   "version": "1.0.0",
   "main": "expo/AppEntry.js",
   "scripts": {
-    "start": "expo start"
+    "start": "expo start",
+    "build:apk": "node build-apk.js preview",
+    "build:production": "node build-apk.js production",
+    "build:dev": "node build-apk.js development",
+    "build:status": "eas build:list"
   },
   "dependencies": {
     "@expo/metro-config": "~54.0.14",
